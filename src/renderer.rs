@@ -1,6 +1,5 @@
 extern crate glium;
 extern crate obj;
-
 use camera::*;
 use gameobject::*;
 
@@ -9,14 +8,12 @@ pub struct RenderContext {
     pub clear_g : f32,
     pub clear_b : f32,
     pub models: Vec<GameObject>,
-    pub program: Option<glium::Program>,
     pub camera: CameraState,
 }
 
-
 impl RenderContext {
     pub fn new() -> RenderContext {
-        RenderContext {camera: CameraState::new(), clear_r: 0.0, clear_g: 0.0, clear_b: 0.0, models: Vec::new(), program: None}
+        RenderContext {camera: CameraState::new(), clear_r: 0.0, clear_g: 0.0, clear_b: 0.0, models: Vec::new()}
     }
 }
 
@@ -42,27 +39,21 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
     let view_mat = context.camera.get_view();
 
     for i in 0..context.models.len() {
-        if context.program.is_none() {
-            println!("No shader program available");
-        }
-        else {
-            let program = context.program.take().unwrap();
+        let gobj = &context.models[i];
+        let program = &gobj.shader_program;
 
-            let gobj = &context.models[i];
-            let model = &gobj.model;
 
-            let model_matrix = gobj.get_model_matrix();
+        let model = &gobj.model;
 
-            let uniforms = uniform! {
-                persp_matrix: pers_mat,
-                view_matrix: view_mat,
-                model_matrix: model_matrix,
-                light: (-1.0, -1.0, -1.0f32)
-            };
+        let model_matrix = gobj.get_model_matrix();
 
-            target.draw(&model.vertex_buffer, &model.index_buffer, &program, &uniforms, &params).unwrap();
+        let uniforms = uniform! {
+            persp_matrix: pers_mat,
+            view_matrix: view_mat,
+            model_matrix: model_matrix,
+            light: (-1.0, -1.0, -1.0f32)
+        };
 
-            context.program = Some(program);
-        }
+        target.draw(&model.vertex_buffer, &model.index_buffer, &program, &uniforms, &params).unwrap();
     }
 }

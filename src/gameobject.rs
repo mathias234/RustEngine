@@ -1,13 +1,16 @@
+
+extern crate glium;
 use model::*;
 
 pub struct GameObject {
     pub model: Model,
     pub position: [f32; 3],
+    pub shader_program: glium::Program,
 }
 
 impl GameObject {
-    pub fn new(position: [f32; 3], model: Model) -> GameObject {
-        GameObject {position: position, model: model }
+    pub fn new(position: [f32; 3], model: Model, shader_program: glium::Program) -> GameObject {
+        GameObject {position: position, model: model, shader_program: shader_program }
     }
 
     pub fn get_model_matrix(&self) -> [[f32; 4]; 4] {

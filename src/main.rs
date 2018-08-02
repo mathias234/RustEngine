@@ -21,19 +21,8 @@ fn main() {
     
     let display = glium::Display::new(window, glutin_context, &events_loop).unwrap();
 
-    // #[derive(Copy, Clone)]
-    // struct Vertex {
-    //     position: [f32; 2],
-    // }
-
-    // let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
-    // let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-
-    let program = shader::read_shader_file(&display, "basic");
 
     let mut render_context = renderer::init_renderer();
-
-    render_context.program = Some(program);
 
     game::start(&display, &mut render_context);
 
@@ -46,7 +35,6 @@ fn main() {
 
         renderer::update_renderer(&mut render_context, &mut target);
         
-        // target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
 
         target.finish().unwrap();
 
