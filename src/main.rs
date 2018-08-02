@@ -8,6 +8,7 @@ mod camera;
 mod model;
 mod gameobject;
 mod shader;
+mod math_helper;
 
 fn main() {
     use glium::{glutin};

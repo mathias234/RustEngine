@@ -16,5 +16,9 @@ pub fn read_shader_file(display: &glium::Display, filename: &str) -> glium::Prog
     let mut fs_file_reader = File::open(fs_shader).unwrap();
     fs_file_reader.read_to_string(&mut fragment_shader_src).unwrap();
 
-    return glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap();
+    let program = glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap();
+
+    println!("Successfully loaded shader, (Name: {})", filename);
+
+    return program;
 }

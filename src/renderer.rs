@@ -15,6 +15,16 @@ impl RenderContext {
     pub fn new() -> RenderContext {
         RenderContext {camera: CameraState::new(), clear_r: 0.0, clear_g: 0.0, clear_b: 0.0, models: Vec::new()}
     }
+
+    pub fn get_gameobject(&mut self, name: String) -> &mut GameObject {
+        for i in 0..self.models.len() {
+            if self.models[i].name == name {
+                return &mut self.models[i];
+            }
+        }
+
+        &mut self.models[0]
+    }
 }
 
 pub fn init_renderer() -> RenderContext {
