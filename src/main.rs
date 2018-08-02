@@ -5,15 +5,19 @@ extern crate obj;
 mod game;
 mod renderer;
 mod camera;
+mod model;
 
 fn main() {
     use glium::{glutin};
     
     // Create A window
     let mut events_loop = glutin::EventsLoop::new();
-    let window = glutin::WindowBuilder::new();
-    let context = glutin::ContextBuilder::new();
-    let display = glium::Display::new(window, context, &events_loop).unwrap();
+    let window = glutin::WindowBuilder::new()      
+        .with_title("Rust Engine")
+        .with_dimensions(glutin::dpi::LogicalSize::new(1024.0, 768.0));
+    let glutin_context = glutin::ContextBuilder::new().with_vsync(true);
+    
+    let display = glium::Display::new(window, glutin_context, &events_loop).unwrap();
 
     // #[derive(Copy, Clone)]
     // struct Vertex {
@@ -70,7 +74,7 @@ fn main() {
 
         let mut target = display.draw();
 
-        renderer::update_renderer(&mut render_context, &display, &mut target);
+        renderer::update_renderer(&mut render_context, &mut target);
         
         // target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
 

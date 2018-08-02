@@ -1,10 +1,8 @@
 extern crate glium;
 extern crate obj;
 
-use std::fs::File;
-use std::io::BufReader;
-use obj::*;
 use camera::*;
+use model::*;
 
 pub struct RenderContext {
     pub clear_r : f32,
@@ -15,52 +13,6 @@ pub struct RenderContext {
     pub camera: CameraState,
 }
 
-pub struct Model {
-    pub vertex_buffer: glium::VertexBuffer<ModelVertex>,
-    pub index_buffer: glium::IndexBuffer<u16>,
-}
-
-#[derive(Copy, PartialEq, Clone, Debug)]
-pub struct ModelVertex {
-    pub position: [f32; 3],
-    pub normal: [f32; 3],
-}
-
-implement_vertex!(ModelVertex, position, normal);
-
-impl Model {
-    fn convert_vertices(vertices: Vec<Vertex>) -> Vec<ModelVertex> {
-        let mut new_vertices : Vec<ModelVertex> = Vec::new();
-
-        for i in 0..vertices.len() {
-            let old_vertex = &vertices[i];
-            new_vertices.push(ModelVertex { position: old_vertex.position, normal: old_vertex.normal });
-        }
-
-        new_vertices
-    }
-
-    pub fn load_model(filename: String, display: &glium::Display) -> Model {
-        use glium::GlObject;
-
-        println!("Loading model: {}", filename);
-
-        let input = BufReader::new(File::open(filename).unwrap());
-        let obj: Obj = load_obj(input).unwrap();
-
-        println!("  Length of vertex array: {}", obj.vertices.len());
-        println!("  Length of index array: {}", obj.indices.len());
-
-        let vb = glium::VertexBuffer::new(display, &Model::convert_vertices(obj.vertices)).unwrap();
-        let ib = glium::IndexBuffer::new(display, glium::index::PrimitiveType::TrianglesList, &obj.indices).unwrap();
-
-        println!("Successfully loaded model, (Vertex ID: {}), (Index ID: {})", vb.get_id(), ib.get_id());
-
-
-        Model {vertex_buffer: vb, index_buffer: ib}
-    }
-
-}
 
 impl RenderContext {
     pub fn new() -> RenderContext {
@@ -72,7 +24,7 @@ pub fn init_renderer() -> RenderContext {
     RenderContext::new()
 }
 
-pub fn update_renderer(context: &mut RenderContext, display: &glium::Display, target: &mut glium::Frame) {
+pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
     use glium::{Surface};
 
     target.clear_color_and_depth((context.clear_r, context.clear_g, context.clear_b, 1.0),1.0);

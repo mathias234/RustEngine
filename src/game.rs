@@ -1,6 +1,7 @@
 extern crate glium;
 
-use renderer::{RenderContext, Model};
+use renderer::*;
+use model::*;
 use glium::{glutin};
 
 
