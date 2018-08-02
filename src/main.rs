@@ -4,9 +4,10 @@ extern crate obj;
 
 mod game;
 mod renderer;
+mod camera;
 
 fn main() {
-    use glium::{glutin, Surface};
+    use glium::{glutin};
     
     // Create A window
     let mut events_loop = glutin::EventsLoop::new();
@@ -24,17 +25,32 @@ fn main() {
 
     let vertex_shader_src = r#"
         #version 140
-        in vec2 position;
+
+        uniform mat4 persp_matrix;
+        uniform mat4 view_matrix;
+
+        in vec3 position;
+        in vec3 normal;
+
+        out vec3 _normal;
+
         void main() {
-            gl_Position = vec4(position, 0.0, 1.0);
+            gl_Position = persp_matrix * view_matrix * vec4(position, 1.0);
+            _normal = normalize(normal);
         }
     "#;
 
     let fragment_shader_src = r#"
         #version 140
-        out vec4 color;
+
+        uniform vec3 light;
+
+        in vec3 _normal;
+        out vec4 result;
+
+
         void main() {
-            color = vec4(1.0, 0.0, 0.0, 1.0);
+            result = vec4(clamp(dot(_normal, -light), 0.0f, 1.0f) * vec3(1.0f, 0.93f, 0.56f), 1.0f);            
         }
     "#;
 
@@ -45,7 +61,7 @@ fn main() {
 
     render_context.program = Some(program);
 
-    game::start(&mut render_context);
+    game::start(&display, &mut render_context);
 
     // Game Loop
     let mut closed = false;
@@ -64,7 +80,7 @@ fn main() {
             match ev {
                 glutin::Event::WindowEvent { event, .. } => match event {
                     glutin::WindowEvent::CloseRequested => closed = true,
-                    _ => (),
+                    ev => game::process_input(&mut render_context, &ev),
                 },
 
                 _ => (),

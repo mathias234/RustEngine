@@ -1,21 +1,21 @@
-use renderer::{RenderContext, Vertex, Model};
+extern crate glium;
 
-pub fn start(context: &mut RenderContext) {
+use renderer::{RenderContext, Model};
+use glium::{glutin};
+
+
+pub fn start(display: &glium::Display, context: &mut RenderContext) {
     context.clear_r = 0.0;
     context.clear_b = 0.7;
     context.clear_g = 0.3;
 
-    let mut verts: Vec<Vertex> = Vec::new();
-    let vertex1 = Vertex { position: [-0.5, -0.5] };
-    let vertex2 = Vertex { position: [ 0.0,  0.5] };
-    let vertex3 = Vertex { position: [ 0.5, -0.25] };
-    verts.push(vertex1);
-    verts.push(vertex2);
-    verts.push(vertex3);
-
-    context.models.push(Model { vertices: verts, indices: Vec::new() })
+    context.models.push(Model::load_model("test.obj".to_string(), &display))
 }
 
 pub fn update(context: &mut RenderContext) {
+    context.camera.update();
+}
 
+pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {
+    context.camera.process_input(event);
 }
