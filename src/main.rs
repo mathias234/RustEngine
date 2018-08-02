@@ -7,6 +7,7 @@ mod renderer;
 mod camera;
 mod model;
 mod gameobject;
+mod shader;
 
 fn main() {
     use glium::{glutin};
@@ -28,42 +29,7 @@ fn main() {
     // let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     // let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-    let vertex_shader_src = r#"
-        #version 140
-
-        uniform mat4 persp_matrix;
-        uniform mat4 view_matrix;
-        uniform mat4 model_matrix;
-
-        in vec3 position;
-        in vec3 normal;
-
-        out vec3 _normal;
-
-        void main() {
-            mat4 mvp = persp_matrix * view_matrix * model_matrix;
-
-            gl_Position = mvp * vec4(position, 1.0);
-            
-            _normal = normalize(normal);
-        }
-    "#;
-
-    let fragment_shader_src = r#"
-        #version 140
-
-        uniform vec3 light;
-
-        in vec3 _normal;
-        out vec4 result;
-
-
-        void main() {
-            result = vec4(clamp(dot(_normal, -light), 0.0f, 1.0f) * vec3(1.0f, 0.93f, 0.56f), 1.0f);            
-        }
-    "#;
-
-    let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap();
+    let program = shader::read_shader_file(&display, "basic");
 
     let mut render_context = renderer::init_renderer();
 
