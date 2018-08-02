@@ -26,12 +26,12 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
     context.models.push(monkey_head);
 }
 
-static ANGLE: f32 = 0.05;
+static ANGLE: f32 = 0.5;
 
-pub fn update(context: &mut RenderContext) {
+pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update();
     let monkey_head = context.get_gameobject("monkey_head".to_string());
-    monkey_head.rotation[1] += ANGLE;
+    monkey_head.rotation[1] += ANGLE * delta_time;
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {

@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate glium;
 extern crate obj;
+extern crate stopwatch;
 
 mod game;
 mod renderer;
@@ -27,10 +28,15 @@ fn main() {
 
     game::start(&display, &mut render_context);
 
+    use stopwatch::{Stopwatch};
+
+    let mut sw = Stopwatch::start_new();
+    let mut delta_time : f64 = 0.0;
+
     // Game Loop
     let mut closed = false;
     while !closed {
-        game::update(&mut render_context);
+        game::update(&mut render_context, delta_time as f32);
 
         let mut target = display.draw();
 
@@ -50,5 +56,10 @@ fn main() {
             }
 
         });
+
+        // get the elapsed time as nano secounds in case this frame happened very fast
+        let elapsed_time = sw.elapsed().subsec_nanos();
+        delta_time = elapsed_time as f64 / 1_000_000_000.0;
+        sw.restart();
     }
 }
