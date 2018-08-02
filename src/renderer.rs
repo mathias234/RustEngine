@@ -1,4 +1,9 @@
 extern crate glium;
+extern crate obj;
+
+use std::fs::File;
+use std::io::BufReader;
+use obj::*;
 
 pub struct RenderContext {
     pub clear_r : f32,
@@ -8,14 +13,34 @@ pub struct RenderContext {
     pub program: Option<glium::Program>,
 }
 
-#[derive(Copy, Clone)]
-pub struct Vertex {
-    pub position: [f32; 2],
+pub struct Model {
+    pub vertex_buffer: glium::VertexBuffer<obj::Vertex>,
+    pub index_buffer: glium::IndexBuffer<u16>,
 }
 
-pub struct Model {
-    pub vertices: Vec<Vertex>,
-    pub indices: Vec<i32>,
+#[derive(Copy, PartialEq, Clone, Debug)]
+pub struct ModelVertex {
+    pub position: [f32; 3],
+    pub normal: [f32; 3],
+}
+
+implement_vertex!(ModelVertex, position, normal);
+
+impl Model {
+    fn ConvertVertices(vertices: Vec<Vertex>) -> Vec<ModelVertex> {
+        Vec::new()
+    }
+
+    pub fn load_model(filename: String, display: &glium::Display) {
+
+        let input = BufReader::new(File::open(filename).unwrap());
+        let obj: Obj = load_obj(input).unwrap();
+
+
+        let vb = glium::VertexBuffer::new(display, &Model::ConvertVertices(obj.vertices));
+        let ib = glium::IndexBuffer::new(display, glium::index::PrimitiveType::TrianglesList, &obj.indices);
+    }
+
 }
 
 impl RenderContext {
@@ -25,8 +50,6 @@ impl RenderContext {
 }
 
 pub fn init_renderer() -> RenderContext {
-    implement_vertex!(Vertex, position);
-    
     RenderContext::new()
 }
 
@@ -35,18 +58,17 @@ pub fn update_renderer(context: &mut RenderContext, display: &glium::Display, ta
 
     target.clear_color(context.clear_r, context.clear_g, context.clear_b, 1.0);
 
-    let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
     for i in 0..context.models.len() {
-        let mut vertex_buffer = glium::VertexBuffer::new(display, &context.models[i].vertices).unwrap();
-
         if(context.program.is_none()) {
             println!("No shader program available");
         }
         else {
             let prog = context.program.take().unwrap();
 
-            target.draw(&vertex_buffer, &indices,  &prog, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
+            let model = context.models[i];
+
+            target.draw(&model.vertex_buffer, &model.index_buffer,  &prog, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
 
             context.program = Some(prog);
         }

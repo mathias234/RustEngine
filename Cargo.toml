@@ -4,4 +4,5 @@ version = "0.1.0"
 authors = ["Mathias Danielsen <Mathais234@hotmail.com>"]
 
 [dependencies]
-glium = "*"
+glium = {version="*"}
+obj-rs = { version = "0.4", features = ["glium-support"] }
