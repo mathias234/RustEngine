@@ -2,13 +2,13 @@ extern crate glium;
 extern crate obj;
 
 use camera::*;
-use model::*;
+use gameobject::*;
 
 pub struct RenderContext {
     pub clear_r : f32,
     pub clear_g : f32,
     pub clear_b : f32,
-    pub models: Vec<Model>,
+    pub models: Vec<GameObject>,
     pub program: Option<glium::Program>,
     pub camera: CameraState,
 }
@@ -38,11 +38,8 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
         ..Default::default()
     };
 
-    let uniforms = uniform! {
-        persp_matrix: context.camera.get_perspective(),
-        view_matrix: context.camera.get_view(),
-        light: (-1.0, -1.0, -1.0f32)
-    };
+    let pers_mat = context.camera.get_perspective();
+    let view_mat = context.camera.get_view();
 
     for i in 0..context.models.len() {
         if context.program.is_none() {
@@ -51,7 +48,17 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
         else {
             let program = context.program.take().unwrap();
 
-            let model = &context.models[i];
+            let gobj = &context.models[i];
+            let model = &gobj.model;
+
+            let model_matrix = gobj.get_model_matrix();
+
+            let uniforms = uniform! {
+                persp_matrix: pers_mat,
+                view_matrix: view_mat,
+                model_matrix: model_matrix,
+                light: (-1.0, -1.0, -1.0f32)
+            };
 
             target.draw(&model.vertex_buffer, &model.index_buffer, &program, &uniforms, &params).unwrap();
 

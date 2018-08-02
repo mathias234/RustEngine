@@ -6,6 +6,7 @@ mod game;
 mod renderer;
 mod camera;
 mod model;
+mod gameobject;
 
 fn main() {
     use glium::{glutin};
@@ -32,6 +33,7 @@ fn main() {
 
         uniform mat4 persp_matrix;
         uniform mat4 view_matrix;
+        uniform mat4 model_matrix;
 
         in vec3 position;
         in vec3 normal;
@@ -39,7 +41,10 @@ fn main() {
         out vec3 _normal;
 
         void main() {
-            gl_Position = persp_matrix * view_matrix * vec4(position, 1.0);
+            mat4 mvp = persp_matrix * view_matrix * model_matrix;
+
+            gl_Position = mvp * vec4(position, 1.0);
+            
             _normal = normalize(normal);
         }
     "#;
@@ -59,7 +64,6 @@ fn main() {
     "#;
 
     let program = glium::Program::from_source(&display, vertex_shader_src, fragment_shader_src, None).unwrap();
-
 
     let mut render_context = renderer::init_renderer();
 
@@ -89,7 +93,7 @@ fn main() {
 
                 _ => (),
             }
-            
+
         });
     }
 }
