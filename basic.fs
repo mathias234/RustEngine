@@ -2,8 +2,10 @@
 
 uniform vec3 light;
 uniform float ambient_light;
+uniform sampler2D diffuse;
 
 in vec3 _normal;
+in vec2 _texcoord;
 out vec4 result;
 
 
@@ -16,5 +18,7 @@ void main() {
         diffuseColor = vec4(1.0, 1.0, 1.0, 1.0) * 1 * diffuseFactor;
     }
 
-    result = vec4(ambient_light, ambient_light, ambient_light, 1.0f) + diffuseColor;            
+    vec4 diffuseTex = texture(diffuse, _texcoord);
+
+    result = diffuseTex *(vec4(ambient_light, ambient_light, ambient_light, 1.0f) + diffuseColor);            
 }

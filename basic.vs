@@ -6,7 +6,9 @@ uniform mat4 model_matrix;
 
 in vec3 position;
 in vec3 normal;
+in vec2 texcoord;
 
+out vec2 _texcoord;
 out vec3 _normal;
 
 void main() {
@@ -15,4 +17,5 @@ void main() {
     gl_Position = mvp * vec4(position, 1.0);
     
     _normal = (model_matrix * vec4(normal, 0.0)).xyz;
+    _texcoord = texcoord;
 }

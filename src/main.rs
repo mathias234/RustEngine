@@ -1,23 +1,24 @@
 #[macro_use]
 extern crate glium;
-extern crate tobj;
 extern crate stopwatch;
+extern crate tobj;
 
-mod game;
-mod renderer;
 mod camera;
-mod model;
+mod game;
 mod gameobject;
-mod shader;
 mod math_helper;
+mod model;
+mod renderer;
+mod shader;
+mod texture;
 
 fn main() {
-    use glium::{glutin};
-    use stopwatch::{Stopwatch};
-    
+    use glium::glutin;
+    use stopwatch::Stopwatch;
+
     // Create A window
     let mut events_loop = glutin::EventsLoop::new();
-    let window = glutin::WindowBuilder::new()      
+    let window = glutin::WindowBuilder::new()
         .with_title("Rust Engine")
         .with_dimensions(glutin::dpi::LogicalSize::new(1024.0, 768.0));
     let glutin_context = glutin::ContextBuilder::new().with_vsync(true);
@@ -28,7 +29,7 @@ fn main() {
     game::start(&display, &mut render_context);
 
     let mut sw = Stopwatch::start_new();
-    let mut delta_time : f64 = 0.0;
+    let mut delta_time: f64 = 0.0;
 
     // Game Loop
     let mut closed = false;
@@ -41,16 +42,13 @@ fn main() {
 
         target.finish().unwrap();
 
-        events_loop.poll_events(|ev| {
-            match ev {
-                glutin::Event::WindowEvent { event, .. } => match event {
-                    glutin::WindowEvent::CloseRequested => closed = true,
-                    ev => game::process_input(&mut render_context, &ev),
-                },
+        events_loop.poll_events(|ev| match ev {
+            glutin::Event::WindowEvent { event, .. } => match event {
+                glutin::WindowEvent::CloseRequested => closed = true,
+                ev => game::process_input(&mut render_context, &ev),
+            },
 
-                _ => (),
-            }
-
+            _ => (),
         });
 
         // get the elapsed time as nano secounds in case this frame happened very fast

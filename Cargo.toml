@@ -8,3 +8,4 @@ glium = {version="*"}
 tobj = "0.1.6"
 nphysics3d = "0.9"
 stopwatch = "0.0.7"
+image = "*"

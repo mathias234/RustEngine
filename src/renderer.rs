@@ -4,16 +4,22 @@ use camera::*;
 use gameobject::*;
 
 pub struct RenderContext {
-    pub clear_r : f32,
-    pub clear_g : f32,
-    pub clear_b : f32,
+    pub clear_r: f32,
+    pub clear_g: f32,
+    pub clear_b: f32,
     pub models: Vec<GameObject>,
     pub camera: CameraState,
 }
 
 impl RenderContext {
     pub fn new() -> RenderContext {
-        RenderContext {camera: CameraState::new(), clear_r: 0.0, clear_g: 0.0, clear_b: 0.0, models: Vec::new()}
+        RenderContext {
+            camera: CameraState::new(),
+            clear_r: 0.0,
+            clear_g: 0.0,
+            clear_b: 0.0,
+            models: Vec::new(),
+        }
     }
 
     pub fn get_gameobject(&mut self, name: String) -> &mut GameObject {
@@ -32,9 +38,12 @@ pub fn init_renderer() -> RenderContext {
 }
 
 pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
-    use glium::{Surface};
+    use glium::Surface;
 
-    target.clear_color_and_depth((context.clear_r, context.clear_g, context.clear_b, 1.0),1.0);
+    target.clear_color_and_depth(
+        (context.clear_r, context.clear_g, context.clear_b, 1.0),
+        1.0,
+    );
 
     let params = glium::DrawParameters {
         depth: glium::Depth {
@@ -52,7 +61,6 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
         let gobj = &context.models[i];
         let program = &gobj.shader_program;
 
-
         let model = &gobj.model;
 
         let model_matrix = gobj.get_model_matrix();
@@ -63,8 +71,17 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
             model_matrix: model_matrix,
             light: (-1.0, -1.0, -1.0f32),
             ambient_light: 0.2 as f32,
+            diffuse: &gobj.texture,
         };
 
-        target.draw(&model.vertex_buffer, &model.index_buffer, &program, &uniforms, &params).unwrap();
+        target
+            .draw(
+                &model.vertex_buffer,
+                &model.index_buffer,
+                &program,
+                &uniforms,
+                &params,
+            )
+            .unwrap();
     }
 }

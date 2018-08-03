@@ -1,7 +1,6 @@
-
 extern crate glium;
-use model::*;
 use math_helper;
+use model::*;
 
 pub struct GameObject {
     pub name: String,
@@ -9,11 +8,26 @@ pub struct GameObject {
     pub position: [f32; 3],
     pub rotation: [f32; 3],
     pub shader_program: glium::Program,
+    pub texture: glium::texture::Texture2d,
 }
 
 impl GameObject {
-    pub fn new(name: String, position: [f32; 3], rotation: [f32; 3], model: Model, shader_program: glium::Program) -> GameObject {
-        GameObject {name: name, position: position, rotation: rotation, model: model, shader_program: shader_program }
+    pub fn new(
+        name: String,
+        position: [f32; 3],
+        rotation: [f32; 3],
+        model: Model,
+        shader_program: glium::Program,
+        texture: glium::texture::Texture2d,
+    ) -> GameObject {
+        GameObject {
+            name: name,
+            position: position,
+            rotation: rotation,
+            model: model,
+            shader_program: shader_program,
+            texture: texture,
+        }
     }
 
     fn get_rotation_matrix(&self) -> [[f32; 4]; 4] {
@@ -26,22 +40,19 @@ impl GameObject {
         let cos_z = self.rotation[2].cos();
         let sin_z = self.rotation[2].sin();
 
-        let rz = 
-        [
+        let rz = [
             [cos_z, sin_z, 0.0, 0.0],
             [-sin_z, cos_z, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ];
-        let rx = 
-        [
+        let rx = [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, cos_x, sin_x, 0.0],
             [0.0, -sin_x, cos_x, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ];
-        let ry = 
-        [
+        let ry = [
             [cos_y, 0.0, sin_y, 0.0],
             [0.0, 1.0, 0.0, 0.0],
             [-sin_y, 0.0, cos_y, 0.0],
@@ -50,7 +61,7 @@ impl GameObject {
 
         math_helper::mat_mul(rz, math_helper::mat_mul(ry, rx))
     }
-    
+
     fn get_translation_matrix(&self) -> [[f32; 4]; 4] {
         [
             [1.0, 0.0, 0.0, 0.0],

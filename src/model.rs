@@ -1,17 +1,16 @@
 extern crate glium;
 extern crate tobj;
 
-use std::fs::File;
-use std::io::BufReader;
 use std::path::Path;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct ModelVertex {
     pub position: [f32; 3],
     pub normal: [f32; 3],
+    pub texcoord: [f32; 2],
 }
 
-implement_vertex!(ModelVertex, position, normal);
+implement_vertex!(ModelVertex, position, normal, texcoord);
 
 pub struct Model {
     pub vertex_buffer: glium::VertexBuffer<ModelVertex>,
@@ -19,7 +18,7 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn load_model(filename: String, display: &glium::Display) -> Model {
+    pub fn load_model(display: &glium::Display, filename: String) -> Model {
         use glium::GlObject;
 
         println!("Loading model: {}", filename);
@@ -45,12 +44,23 @@ impl Model {
                     mesh.positions[3 * v + 1],
                     mesh.positions[3 * v + 2],
                 ],
-                normal: [
+                normal: [0.0, 0.0, 0.0],
+                texcoord: [0.0, 0.0],
+            });
+
+            // normals are optional
+            if mesh.normals.len() > 0 {
+                vertices[v].normal = [
                     mesh.normals[3 * v],
                     mesh.normals[3 * v + 1],
                     mesh.normals[3 * v + 2],
-                ],
-            });
+                ];
+            }
+
+            // tex coords are optional
+            if mesh.texcoords.len() > 0 {
+                vertices[v].texcoord = [mesh.texcoords[2 * v], mesh.texcoords[2 * v + 1]];
+            }
         }
 
         println!("  Length of vertex array: {}", vertices.len());
