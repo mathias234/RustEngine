@@ -21,7 +21,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
         [0.0, 0.0, 0.0],
         plane,
         shader::read_shader_file(&display, "res/basic"),
-        texture::load_texture(&display, "res/test.png".to_string()),
+        texture::load_texture(&display, "res/grass.png".to_string()),
     );
 
     let monkey_head = GameObject::new(
@@ -30,7 +30,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
         [0.0, 0.0, 0.0],
         monkey_head_model,
         shader::read_shader_file(&display, "res/basic"),
-        texture::load_texture(&display, "res/test.png".to_string()),
+        texture::load_texture(&display, "res/bricks.jpg".to_string()),
     );
 
     context.models.push(monkey_head);

@@ -1,9 +1,7 @@
 extern crate glium;
 extern crate image;
 
-pub fn load_texture(display: &glium::Display, filename: String) -> glium::texture::Texture2d {
-    use std::io::Cursor;
-
+pub fn load_texture(display: &glium::Display, filename: String) -> glium::texture::SrgbTexture2d {
     println!("Loading texture: {}", filename);
 
     let image = image::open(filename).unwrap().to_rgba();
@@ -13,5 +11,5 @@ pub fn load_texture(display: &glium::Display, filename: String) -> glium::textur
     let image =
         glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
 
-    glium::texture::Texture2d::new(display, image).unwrap()
+    glium::texture::SrgbTexture2d::new(display, image).unwrap()
 }

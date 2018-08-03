@@ -19,6 +19,6 @@ void main() {
     }
 
     vec4 diffuseTex = texture(diffuse, _texcoord);
-
-    result = diffuseTex *(vec4(ambient_light, ambient_light, ambient_light, 1.0f) + diffuseColor);            
+    vec4 ambientLight = vec4(ambient_light, ambient_light, ambient_light, 1.0f);
+    result = diffuseTex * (ambientLight + diffuseColor);            
 }

@@ -8,7 +8,7 @@ pub struct GameObject {
     pub position: [f32; 3],
     pub rotation: [f32; 3],
     pub shader_program: glium::Program,
-    pub texture: glium::texture::Texture2d,
+    pub texture: glium::texture::SrgbTexture2d,
 }
 
 impl GameObject {
@@ -18,7 +18,7 @@ impl GameObject {
         rotation: [f32; 3],
         model: Model,
         shader_program: glium::Program,
-        texture: glium::texture::Texture2d,
+        texture: glium::texture::SrgbTexture2d,
     ) -> GameObject {
         GameObject {
             name: name,
