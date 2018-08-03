@@ -1,5 +1,5 @@
 extern crate glium;
-extern crate obj;
+extern crate tobj;
 use camera::*;
 use gameobject::*;
 

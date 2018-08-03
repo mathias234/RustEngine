@@ -5,6 +5,6 @@ authors = ["Mathias Danielsen <Mathais234@hotmail.com>"]
 
 [dependencies]
 glium = {version="*"}
-obj-rs = { version = "0.4", features = ["glium-support"] }
+tobj = "0.1.6"
 nphysics3d = "0.9"
 stopwatch = "0.0.7"

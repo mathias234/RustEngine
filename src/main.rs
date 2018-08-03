@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate glium;
-extern crate obj;
+extern crate tobj;
 extern crate stopwatch;
 
 mod game;

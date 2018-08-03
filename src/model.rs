@@ -1,9 +1,9 @@
 extern crate glium;
-extern crate obj;
+extern crate tobj;
 
 use std::fs::File;
 use std::io::BufReader;
-use obj::*;
+use std::path::Path;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct ModelVertex {
@@ -13,41 +13,65 @@ pub struct ModelVertex {
 
 implement_vertex!(ModelVertex, position, normal);
 
-
 pub struct Model {
     pub vertex_buffer: glium::VertexBuffer<ModelVertex>,
     pub index_buffer: glium::IndexBuffer<u16>,
 }
 
 impl Model {
-    fn convert_vertices(vertices: Vec<Vertex>) -> Vec<ModelVertex> {
-        let mut new_vertices : Vec<ModelVertex> = Vec::new();
-
-        for i in 0..vertices.len() {
-            let old_vertex = &vertices[i];
-            new_vertices.push(ModelVertex { position: old_vertex.position, normal: old_vertex.normal });
-        }
-
-        new_vertices
-    }
-
     pub fn load_model(filename: String, display: &glium::Display) -> Model {
         use glium::GlObject;
 
         println!("Loading model: {}", filename);
 
-        let input = BufReader::new(File::open(filename).unwrap());
-        let obj: Obj = load_obj(input).unwrap();
+        let tobj_model = tobj::load_obj(&Path::new(&filename));
+        assert!(tobj_model.is_ok());
 
-        println!("  Length of vertex array: {}", obj.vertices.len());
-        println!("  Length of index array: {}", obj.indices.len());
+        let (models, materials) = tobj_model.unwrap();
 
-        let vb = glium::VertexBuffer::new(display, &Model::convert_vertices(obj.vertices)).unwrap();
-        let ib = glium::IndexBuffer::new(display, glium::index::PrimitiveType::TrianglesList, &obj.indices).unwrap();
+        let mesh = &models[0].mesh;
 
-        println!("Successfully loaded model, (Vertex ID: {}), (Index ID: {})", vb.get_id(), ib.get_id());
+        let mut vertices: Vec<ModelVertex> = Vec::new();
+        let mut indices: Vec<u16> = Vec::new();
 
+        for i in 0..mesh.indices.len() {
+            indices.push(mesh.indices[i] as u16);
+        }
 
-        Model {vertex_buffer: vb, index_buffer: ib}
+        for v in 0..mesh.positions.len() / 3 {
+            vertices.push(ModelVertex {
+                position: [
+                    mesh.positions[3 * v],
+                    mesh.positions[3 * v + 1],
+                    mesh.positions[3 * v + 2],
+                ],
+                normal: [
+                    mesh.normals[3 * v],
+                    mesh.normals[3 * v + 1],
+                    mesh.normals[3 * v + 2],
+                ],
+            });
+        }
+
+        println!("  Length of vertex array: {}", vertices.len());
+        println!("  Length of index array: {}", indices.len());
+
+        let vb = glium::VertexBuffer::new(display, &vertices).unwrap();
+        let ib = glium::IndexBuffer::new(
+            display,
+            glium::index::PrimitiveType::TrianglesList,
+            &indices,
+        ).unwrap();
+
+        println!(
+            "Successfully loaded model, (Vertex ID: {}), (Index ID: {})",
+            vb.get_id(),
+            ib.get_id()
+        );
+
+        Model {
+            vertex_buffer: vb,
+            index_buffer: ib,
+        }
     }
 }

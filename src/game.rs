@@ -11,19 +11,28 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
     context.clear_b = 0.7;
     context.clear_g = 0.3;
 
-    let program = shader::read_shader_file(&display, "basic");
 
     let monkey_head_model = Model::load_model("test.obj".to_string(), &display);
+    let plane = Model::load_model("plane.obj".to_string(), &display);
+
+    let plane = GameObject::new(
+        "plane".to_string(),
+        [0.0, -2.0, 0.0],
+        [0.0, 0.0, 0.0],
+        plane,
+        shader::read_shader_file(&display, "basic")
+    );
 
     let monkey_head = GameObject::new(
         "monkey_head".to_string(),
         [0.0, 0.0, -10.0],
         [0.0, 0.0, 0.0],
         monkey_head_model,
-        program,
+        shader::read_shader_file(&display, "basic")
     );
 
     context.models.push(monkey_head);
+    context.models.push(plane)
 }
 
 static ANGLE: f32 = 0.5;
