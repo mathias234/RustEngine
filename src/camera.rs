@@ -32,18 +32,6 @@ impl CameraState {
         }
     }
 
-    pub fn get_position(&self) -> [f32; 3] {
-        [self.position.0, self.position.1, self.position.2]
-    }
-
-    // pub fn set_position(&mut self, pos: (f32, f32, f32)) {
-    //     self.position = pos;
-    // }
-
-    // pub fn set_direction(&mut self, dir: (f32, f32, f32)) {
-    //     self.direction = dir;
-    // }
-
     pub fn get_perspective(&self) -> [[f32; 4]; 4] {
         let fov: f32 = 3.141592 / 2.0;
         let zfar = 1024.0;
