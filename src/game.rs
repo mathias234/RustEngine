@@ -40,7 +40,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
 static ANGLE: f32 = 0.5;
 
 pub fn update(context: &mut RenderContext, delta_time: f32) {
-    context.camera.update();
+    context.camera.update(delta_time);
     let monkey_head = context.get_gameobject("monkey_head".to_string());
     monkey_head.rotation[1] += ANGLE * delta_time;
 }

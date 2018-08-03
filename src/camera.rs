@@ -90,7 +90,7 @@ impl CameraState {
         ]
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, delta_time: f32) {
         let f = {
             let f = self.direction;
             let len = f.0 * f.0 + f.1 * f.1 + f.2 * f.2;
@@ -118,40 +118,42 @@ impl CameraState {
             s.0 * f.1 - s.1 * f.0,
         );
 
+        let speed = 1.0;
+
         if self.moving_up {
-            self.position.0 += u.0 * 0.01;
-            self.position.1 += u.1 * 0.01;
-            self.position.2 += u.2 * 0.01;
+            self.position.0 += u.0 * speed * delta_time;
+            self.position.1 += u.1 * speed * delta_time;
+            self.position.2 += u.2 * speed * delta_time;
         }
 
         if self.moving_left {
-            self.position.0 -= s.0 * 0.01;
-            self.position.1 -= s.1 * 0.01;
-            self.position.2 -= s.2 * 0.01;
+            self.position.0 -= s.0 * speed * delta_time;
+            self.position.1 -= s.1 * speed * delta_time;
+            self.position.2 -= s.2 * speed * delta_time;
         }
 
         if self.moving_down {
-            self.position.0 -= u.0 * 0.01;
-            self.position.1 -= u.1 * 0.01;
-            self.position.2 -= u.2 * 0.01;
+            self.position.0 -= u.0 * speed * delta_time;
+            self.position.1 -= u.1 * speed * delta_time;
+            self.position.2 -= u.2 * speed * delta_time;
         }
 
         if self.moving_right {
-            self.position.0 += s.0 * 0.01;
-            self.position.1 += s.1 * 0.01;
-            self.position.2 += s.2 * 0.01;
+            self.position.0 += s.0 * speed * delta_time;
+            self.position.1 += s.1 * speed * delta_time;
+            self.position.2 += s.2 * speed * delta_time;
         }
 
         if self.moving_forward {
-            self.position.0 += f.0 * 0.01;
-            self.position.1 += f.1 * 0.01;
-            self.position.2 += f.2 * 0.01;
+            self.position.0 += f.0 * speed * delta_time;
+            self.position.1 += f.1 * speed * delta_time;
+            self.position.2 += f.2 * speed * delta_time;
         }
 
         if self.moving_backward {
-            self.position.0 -= f.0 * 0.01;
-            self.position.1 -= f.1 * 0.01;
-            self.position.2 -= f.2 * 0.01;
+            self.position.0 -= f.0 * speed * delta_time;
+            self.position.1 -= f.1 * speed * delta_time;
+            self.position.2 -= f.2 * speed * delta_time;
         }
     }
 
