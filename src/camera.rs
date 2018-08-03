@@ -32,6 +32,10 @@ impl CameraState {
         }
     }
 
+    pub fn get_position(&self) -> [f32; 3] {
+        [self.position.0, self.position.1, self.position.2]
+    }
+
     // pub fn set_position(&mut self, pos: (f32, f32, f32)) {
     //     self.position = pos;
     // }

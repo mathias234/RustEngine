@@ -14,5 +14,5 @@ void main() {
 
     gl_Position = mvp * vec4(position, 1.0);
     
-    _normal = normalize(normal);
+    _normal = (model_matrix * vec4(normal, 0.0)).xyz;
 }
