@@ -1,12 +1,12 @@
-// Taken from https://github.com/glium/glium/blob/master/examples/support/camera.rs
-
 extern crate glium;
 use glium::glutin;
+use math_helper;
+use quaternion::Quaternion;
 
 pub struct CameraState {
     aspect_ratio: f32,
-    position: (f32, f32, f32),
-    direction: (f32, f32, f32),
+    position: [f32; 3],
+    rotation: Quaternion,
 
     moving_up: bool,
     moving_left: bool,
@@ -17,11 +17,11 @@ pub struct CameraState {
 }
 
 impl CameraState {
-    pub fn new() -> CameraState {
+    pub fn new(screen_width: i32, screen_height: i32) -> CameraState {
         CameraState {
-            aspect_ratio: 1024.0 / 768.0,
-            position: (0.1, 0.1, 1.0),
-            direction: (0.0, 0.0, -1.0),
+            aspect_ratio: screen_width as f32 / screen_height as f32,
+            position: [0.0, 0.0, 0.0],
+            rotation: Quaternion::new(0.0, 0.0, 0.0, 1.0),
             moving_up: false,
             moving_left: false,
             moving_down: false,
@@ -29,6 +29,55 @@ impl CameraState {
             moving_forward: false,
             moving_backward: false,
         }
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        let sensitivityX = 2.66 * delta_time;
+        let sensitivityY = 2.0 * delta_time;
+
+        if self.moving_forward {
+            let forward = self.rotation.forward();
+            self.position[0] += forward[0] * 1.0 * delta_time;
+            self.position[1] += forward[1] * 1.0 * delta_time;
+            self.position[2] += forward[2] * 1.0 * delta_time;
+        }
+        if self.moving_backward {
+            let forward = self.rotation.forward();
+            self.position[0] -= forward[0] * 1.0 * delta_time;
+            self.position[1] -= forward[1] * 1.0 * delta_time;
+            self.position[2] -= forward[2] * 1.0 * delta_time;
+        }
+        if self.moving_left {
+            self.rotate([0.0, 1.0, 0.0], -sensitivityX)
+        }
+        if self.moving_right {
+            self.rotate([0.0, 1.0, 0.0], sensitivityX)
+        }
+    }
+
+    fn rotate(&mut self, axis: [f32; 3], angle: f32) {
+        let rot = Quaternion::new_axis_angle(axis, angle);
+
+        let old_rot = self.rotation;
+
+        self.rotation = rot.mul_quat(old_rot);
+    }
+
+    fn get_rotation_matrix(&self) -> [[f32; 4]; 4] {
+        self.rotation.conjugate().to_rotation_matrix()
+    }
+
+    fn get_translation_matrix(&self) -> [[f32; 4]; 4] {
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [-self.position[0], -self.position[1], -self.position[2], 1.0],
+        ]
+    }
+
+    pub fn get_view(&self) -> [[f32; 4]; 4] {
+        math_helper::mat_mul(self.get_translation_matrix(), self.get_rotation_matrix())
     }
 
     pub fn get_perspective(&self) -> [[f32; 4]; 4] {
@@ -45,116 +94,6 @@ impl CameraState {
             [0.0, 0.0, (zfar + znear) / (zfar - znear), 1.0],
             [0.0, 0.0, -(2.0 * zfar * znear) / (zfar - znear), 0.0],
         ]
-    }
-
-    pub fn get_view(&self) -> [[f32; 4]; 4] {
-        let f = {
-            let f = self.direction;
-            let len = f.0 * f.0 + f.1 * f.1 + f.2 * f.2;
-            let len = len.sqrt();
-            (f.0 / len, f.1 / len, f.2 / len)
-        };
-
-        let up = (0.0, 1.0, 0.0);
-
-        let s = (
-            f.1 * up.2 - f.2 * up.1,
-            f.2 * up.0 - f.0 * up.2,
-            f.0 * up.1 - f.1 * up.0,
-        );
-
-        let s_norm = {
-            let len = s.0 * s.0 + s.1 * s.1 + s.2 * s.2;
-            let len = len.sqrt();
-            (s.0 / len, s.1 / len, s.2 / len)
-        };
-
-        let u = (
-            s_norm.1 * f.2 - s_norm.2 * f.1,
-            s_norm.2 * f.0 - s_norm.0 * f.2,
-            s_norm.0 * f.1 - s_norm.1 * f.0,
-        );
-
-        let p = (
-            -self.position.0 * s.0 - self.position.1 * s.1 - self.position.2 * s.2,
-            -self.position.0 * u.0 - self.position.1 * u.1 - self.position.2 * u.2,
-            -self.position.0 * f.0 - self.position.1 * f.1 - self.position.2 * f.2,
-        );
-
-        // note: remember that this is column-major, so the lines of code are actually columns
-        [
-            [s_norm.0, u.0, f.0, 0.0],
-            [s_norm.1, u.1, f.1, 0.0],
-            [s_norm.2, u.2, f.2, 0.0],
-            [p.0, p.1, p.2, 1.0],
-        ]
-    }
-
-    pub fn update(&mut self, delta_time: f32) {
-        let f = {
-            let f = self.direction;
-            let len = f.0 * f.0 + f.1 * f.1 + f.2 * f.2;
-            let len = len.sqrt();
-            (f.0 / len, f.1 / len, f.2 / len)
-        };
-
-        let up = (0.0, 1.0, 0.0);
-
-        let s = (
-            f.1 * up.2 - f.2 * up.1,
-            f.2 * up.0 - f.0 * up.2,
-            f.0 * up.1 - f.1 * up.0,
-        );
-
-        let s = {
-            let len = s.0 * s.0 + s.1 * s.1 + s.2 * s.2;
-            let len = len.sqrt();
-            (s.0 / len, s.1 / len, s.2 / len)
-        };
-
-        let u = (
-            s.1 * f.2 - s.2 * f.1,
-            s.2 * f.0 - s.0 * f.2,
-            s.0 * f.1 - s.1 * f.0,
-        );
-
-        let speed = 1.0;
-
-        if self.moving_up {
-            self.position.0 += u.0 * speed * delta_time;
-            self.position.1 += u.1 * speed * delta_time;
-            self.position.2 += u.2 * speed * delta_time;
-        }
-
-        if self.moving_left {
-            self.position.0 -= s.0 * speed * delta_time;
-            self.position.1 -= s.1 * speed * delta_time;
-            self.position.2 -= s.2 * speed * delta_time;
-        }
-
-        if self.moving_down {
-            self.position.0 -= u.0 * speed * delta_time;
-            self.position.1 -= u.1 * speed * delta_time;
-            self.position.2 -= u.2 * speed * delta_time;
-        }
-
-        if self.moving_right {
-            self.position.0 += s.0 * speed * delta_time;
-            self.position.1 += s.1 * speed * delta_time;
-            self.position.2 += s.2 * speed * delta_time;
-        }
-
-        if self.moving_forward {
-            self.position.0 += f.0 * speed * delta_time;
-            self.position.1 += f.1 * speed * delta_time;
-            self.position.2 += f.2 * speed * delta_time;
-        }
-
-        if self.moving_backward {
-            self.position.0 -= f.0 * speed * delta_time;
-            self.position.1 -= f.1 * speed * delta_time;
-            self.position.2 -= f.2 * speed * delta_time;
-        }
     }
 
     pub fn process_input(&mut self, event: &glutin::WindowEvent) {

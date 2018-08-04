@@ -8,6 +8,7 @@ mod game;
 mod gameobject;
 mod math_helper;
 mod model;
+mod quaternion;
 mod renderer;
 mod shader;
 mod texture;

@@ -14,7 +14,7 @@ pub struct RenderContext {
 impl RenderContext {
     pub fn new() -> RenderContext {
         RenderContext {
-            camera: CameraState::new(),
+            camera: CameraState::new(1024, 768),
             clear_r: 0.0,
             clear_g: 0.0,
             clear_b: 0.0,
