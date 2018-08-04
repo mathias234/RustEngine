@@ -1,7 +1,10 @@
 extern crate glium;
+extern crate stopwatch;
+
 use glium::glutin;
 use math_helper;
 use quaternion::Quaternion;
+use stopwatch::Stopwatch;
 
 pub struct CameraState {
     aspect_ratio: f32,
@@ -17,9 +20,10 @@ pub struct CameraState {
 
     mouse_locked: bool,
 
-    last_cursor_position_x: i32,
-    last_cursor_position_y: i32,
     last_cursor_set: bool,
+
+    input_stopwatch: Stopwatch,
+    input_delta_time: f32,
 }
 
 impl CameraState {
@@ -35,18 +39,13 @@ impl CameraState {
             moving_forward: false,
             moving_backward: false,
             mouse_locked: false,
-            last_cursor_position_x: 0,
-            last_cursor_position_y: 0,
             last_cursor_set: false,
+            input_stopwatch: Stopwatch::start_new(),
+            input_delta_time: 0.0,
         }
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        let sensitivityX = 2.66 * delta_time;
-        let sensitivityY = 2.0 * delta_time;
-
-        // println!("[{}, {}]", mouse_delta_x, mouse_delta_y);
-
         if self.moving_forward {
             let forward = self.rotation.forward();
             self.position[0] += forward[0] * 1.0 * delta_time;
@@ -122,41 +121,45 @@ impl CameraState {
             glutin::VirtualKeyCode::D => self.moving_right = pressed,
             glutin::VirtualKeyCode::W => self.moving_forward = pressed,
             glutin::VirtualKeyCode::S => self.moving_backward = pressed,
-            glutin::VirtualKeyCode::Tab => self.mouse_locked = !self.mouse_locked,
+            glutin::VirtualKeyCode::LControl => self.mouse_locked = pressed,
             _ => (),
         };
     }
 
-    fn process_mouse(&mut self, event: &glutin::WindowEvent) {
-        let cursor_moved = match *event {
-            glutin::WindowEvent::CursorMoved { position, .. } => position,
+    fn process_mouse(&mut self, event: &glutin::DeviceEvent) {
+        let delta = match *event {
+            glutin::DeviceEvent::MouseMotion { delta, .. } => delta,
             _ => return,
         };
 
-        let current_cursor_position_x = cursor_moved.x as i32;
-        let current_cursor_position_y = cursor_moved.y as i32;
-
         if self.mouse_locked {
-            let mouse_delta_x = current_cursor_position_x - self.last_cursor_position_x;
-            let mouse_delta_y = current_cursor_position_y - self.last_cursor_position_y;
+            let mouse_delta_x = delta.0;
+            let mouse_delta_y = delta.1;
 
             let right = self.rotation.right();
 
-            if mouse_delta_x != 0 {
-                self.rotate([0.0, 1.0, 0.0], mouse_delta_x as f32 / 50.0);
+            let input_delta = self.input_delta_time;
+
+            if mouse_delta_x != 0.0 {
+                self.rotate([0.0, 1.0, 0.0], mouse_delta_x as f32 * 2.0 * input_delta);
             }
-            if mouse_delta_y != 0 {
-                self.rotate(right, mouse_delta_y as f32 / 50.0);
+            if mouse_delta_y != 0.0 {
+                self.rotate(right, mouse_delta_y as f32 * 2.66 * input_delta);
             }
         }
 
-        self.last_cursor_position_x = current_cursor_position_x;
-        self.last_cursor_position_y = current_cursor_position_y;
         self.last_cursor_set = true;
     }
 
     pub fn process_input(&mut self, event: &glutin::WindowEvent) {
         self.process_key(event);
+
+        let elapsed_time = self.input_stopwatch.elapsed().subsec_nanos();
+        self.input_delta_time = (elapsed_time as f64 / 1_000_000_000.0) as f32;
+        self.input_stopwatch.restart();
+    }
+
+    pub fn process_input_device(&mut self, event: &glutin::DeviceEvent) {
         self.process_mouse(event);
     }
 }

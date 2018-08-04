@@ -49,3 +49,7 @@ pub fn update(context: &mut RenderContext, delta_time: f32) {
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {
     context.camera.process_input(event);
 }
+
+pub fn process_input_device(context: &mut RenderContext, event: &glutin::DeviceEvent) {
+    context.camera.process_input_device(event);
+}

@@ -22,7 +22,7 @@ fn main() {
     let window = glutin::WindowBuilder::new()
         .with_title("Rust Engine")
         .with_dimensions(glutin::dpi::LogicalSize::new(1024.0, 768.0));
-    let glutin_context = glutin::ContextBuilder::new().with_vsync(true);
+    let glutin_context = glutin::ContextBuilder::new().with_vsync(false);
     let display = glium::Display::new(window, glutin_context, &events_loop).unwrap();
 
     let mut render_context = renderer::init_renderer();
@@ -47,6 +47,9 @@ fn main() {
             glutin::Event::WindowEvent { event, .. } => match event {
                 glutin::WindowEvent::CloseRequested => closed = true,
                 ev => game::process_input(&mut render_context, &ev),
+            },
+            glutin::Event::DeviceEvent { event, .. } => match event {
+                ev => game::process_input_device(&mut render_context, &ev),
             },
             _ => (),
         });

@@ -38,6 +38,7 @@ impl GameObject {
 
         self.rotation = rot.mul_quat(old_rot);
     }
+
     fn get_rotation_matrix(&self) -> [[f32; 4]; 4] {
         self.rotation.to_rotation_matrix()
     }
