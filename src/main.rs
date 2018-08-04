@@ -48,7 +48,6 @@ fn main() {
                 glutin::WindowEvent::CloseRequested => closed = true,
                 ev => game::process_input(&mut render_context, &ev),
             },
-
             _ => (),
         });
 

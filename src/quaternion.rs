@@ -142,4 +142,7 @@ impl Quaternion {
     pub fn forward(&self) -> [f32; 3] {
         self.rotate([0.0, 0.0, 1.0])
     }
+    pub fn right(&self) -> [f32; 3] {
+        self.rotate([1.0, 0.0, 0.0])
+    }
 }

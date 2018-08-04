@@ -14,6 +14,12 @@ pub struct CameraState {
     moving_right: bool,
     moving_forward: bool,
     moving_backward: bool,
+
+    mouse_locked: bool,
+
+    last_cursor_position_x: i32,
+    last_cursor_position_y: i32,
+    last_cursor_set: bool,
 }
 
 impl CameraState {
@@ -28,12 +34,18 @@ impl CameraState {
             moving_right: false,
             moving_forward: false,
             moving_backward: false,
+            mouse_locked: false,
+            last_cursor_position_x: 0,
+            last_cursor_position_y: 0,
+            last_cursor_set: false,
         }
     }
 
     pub fn update(&mut self, delta_time: f32) {
         let sensitivityX = 2.66 * delta_time;
         let sensitivityY = 2.0 * delta_time;
+
+        // println!("[{}, {}]", mouse_delta_x, mouse_delta_y);
 
         if self.moving_forward {
             let forward = self.rotation.forward();
@@ -46,12 +58,6 @@ impl CameraState {
             self.position[0] -= forward[0] * 1.0 * delta_time;
             self.position[1] -= forward[1] * 1.0 * delta_time;
             self.position[2] -= forward[2] * 1.0 * delta_time;
-        }
-        if self.moving_left {
-            self.rotate([0.0, 1.0, 0.0], -sensitivityX)
-        }
-        if self.moving_right {
-            self.rotate([0.0, 1.0, 0.0], sensitivityX)
         }
     }
 
@@ -96,16 +102,19 @@ impl CameraState {
         ]
     }
 
-    pub fn process_input(&mut self, event: &glutin::WindowEvent) {
+    fn process_key(&mut self, event: &glutin::WindowEvent) {
         let input = match *event {
             glutin::WindowEvent::KeyboardInput { input, .. } => input,
             _ => return,
         };
+
         let pressed = input.state == glutin::ElementState::Pressed;
+
         let key = match input.virtual_keycode {
             Some(key) => key,
             None => return,
         };
+
         match key {
             glutin::VirtualKeyCode::Up => self.moving_up = pressed,
             glutin::VirtualKeyCode::Down => self.moving_down = pressed,
@@ -113,7 +122,41 @@ impl CameraState {
             glutin::VirtualKeyCode::D => self.moving_right = pressed,
             glutin::VirtualKeyCode::W => self.moving_forward = pressed,
             glutin::VirtualKeyCode::S => self.moving_backward = pressed,
+            glutin::VirtualKeyCode::Tab => self.mouse_locked = !self.mouse_locked,
             _ => (),
         };
+    }
+
+    fn process_mouse(&mut self, event: &glutin::WindowEvent) {
+        let cursor_moved = match *event {
+            glutin::WindowEvent::CursorMoved { position, .. } => position,
+            _ => return,
+        };
+
+        let current_cursor_position_x = cursor_moved.x as i32;
+        let current_cursor_position_y = cursor_moved.y as i32;
+
+        if self.mouse_locked {
+            let mouse_delta_x = current_cursor_position_x - self.last_cursor_position_x;
+            let mouse_delta_y = current_cursor_position_y - self.last_cursor_position_y;
+
+            let right = self.rotation.right();
+
+            if mouse_delta_x != 0 {
+                self.rotate([0.0, 1.0, 0.0], mouse_delta_x as f32 / 50.0);
+            }
+            if mouse_delta_y != 0 {
+                self.rotate(right, mouse_delta_y as f32 / 50.0);
+            }
+        }
+
+        self.last_cursor_position_x = current_cursor_position_x;
+        self.last_cursor_position_y = current_cursor_position_y;
+        self.last_cursor_set = true;
+    }
+
+    pub fn process_input(&mut self, event: &glutin::WindowEvent) {
+        self.process_key(event);
+        self.process_mouse(event);
     }
 }
