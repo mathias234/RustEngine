@@ -3,6 +3,7 @@ extern crate glium;
 use gameobject::*;
 use glium::glutin;
 use model::*;
+use quaternion::Quaternion;
 use renderer::*;
 use shader;
 use texture;
@@ -18,7 +19,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
     let plane = GameObject::new(
         "plane".to_string(),
         [0.0, -2.0, 0.0],
-        [0.0, 0.0, 0.0],
+        Quaternion::new(0.0, 0.0, 0.0, 1.0),
         plane,
         shader::read_shader_file(&display, "res/basic"),
         texture::load_texture(&display, "res/grass.png".to_string()),
@@ -27,7 +28,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
     let monkey_head = GameObject::new(
         "monkey_head".to_string(),
         [0.0, 0.0, -10.0],
-        [0.0, 0.0, 0.0],
+        Quaternion::new(0.0, 0.0, 0.0, 1.0),
         monkey_head_model,
         shader::read_shader_file(&display, "res/basic"),
         texture::load_texture(&display, "res/bricks.jpg".to_string()),
@@ -42,7 +43,7 @@ static ANGLE: f32 = 0.5;
 pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update(delta_time);
     let monkey_head = context.get_gameobject("monkey_head".to_string());
-    monkey_head.rotation[1] += ANGLE * delta_time;
+    monkey_head.rotate([0.0, 1.0, 0.0], ANGLE * delta_time);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {
