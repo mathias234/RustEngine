@@ -1,4 +1,5 @@
 use math_helper;
+use vector::Vector3;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct Quaternion {
@@ -18,14 +19,14 @@ impl Quaternion {
         }
     }
 
-    pub fn new_axis_angle(axis: [f32; 3], angle: f32) -> Quaternion {
+    pub fn new_axis_angle(axis: Vector3, angle: f32) -> Quaternion {
         let sin_half_angle = (angle / 2.0).sin();
         let cos_half_angle = (angle / 2.0).cos();
 
         Quaternion {
-            x: axis[0] * sin_half_angle,
-            y: axis[1] * sin_half_angle,
-            z: axis[2] * sin_half_angle,
+            x: axis.x * sin_half_angle,
+            y: axis.y * sin_half_angle,
+            z: axis.z * sin_half_angle,
             w: cos_half_angle,
         }
     }
@@ -77,11 +78,11 @@ impl Quaternion {
         }
     }
 
-    pub fn mul_vec3(&self, r: [f32; 3]) -> Quaternion {
-        let w_ = -self.x * r[0] - self.y * r[1] - self.z * r[2];
-        let x_ = self.w * r[0] + self.y * r[2] - self.z * r[1];
-        let y_ = self.w * r[1] + self.z * r[0] - self.x * r[2];
-        let z_ = self.w * r[2] + self.x * r[1] - self.y * r[0];
+    pub fn mul_vec3(&self, r: Vector3) -> Quaternion {
+        let w_ = -self.x * r.x - self.y * r.y - self.z * r.z;
+        let x_ = self.w * r.x + self.y * r.z - self.z * r.y;
+        let y_ = self.w * r.y + self.z * r.x - self.x * r.z;
+        let z_ = self.w * r.z + self.x * r.y - self.y * r.x;
 
         Quaternion {
             x: x_,
@@ -133,16 +134,16 @@ impl Quaternion {
         self.x * r.x + self.y * r.y + self.z * r.z + self.w * r.w
     }
 
-    pub fn rotate(&self, angle: [f32; 3]) -> [f32; 3] {
+    pub fn rotate(&self, angle: Vector3) -> Vector3 {
         let con = self.conjugate();
         let w = self.mul_vec3(angle).mul_quat(con);
-        [w.x, w.y, w.z]
+        Vector3::new(w.x, w.y, w.z)
     }
 
-    pub fn forward(&self) -> [f32; 3] {
-        self.rotate([0.0, 0.0, 1.0])
+    pub fn forward(&self) -> Vector3 {
+        self.rotate(Vector3::new(0.0, 0.0, 1.0))
     }
-    pub fn right(&self) -> [f32; 3] {
-        self.rotate([1.0, 0.0, 0.0])
+    pub fn right(&self) -> Vector3 {
+        self.rotate(Vector3::new(1.0, 0.0, 0.0))
     }
 }

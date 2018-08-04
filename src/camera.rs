@@ -1,14 +1,13 @@
 extern crate glium;
-extern crate stopwatch;
 
 use glium::glutin;
 use math_helper;
 use quaternion::Quaternion;
-use stopwatch::Stopwatch;
+use vector::Vector3;
 
 pub struct CameraState {
     aspect_ratio: f32,
-    position: [f32; 3],
+    position: Vector3,
     rotation: Quaternion,
 
     moving_up: bool,
@@ -25,7 +24,7 @@ impl CameraState {
     pub fn new(screen_width: i32, screen_height: i32) -> CameraState {
         CameraState {
             aspect_ratio: screen_width as f32 / screen_height as f32,
-            position: [0.0, 0.0, 0.0],
+            position: Vector3::new(0.0, 0.0, 0.0),
             rotation: Quaternion::new(0.0, 0.0, 0.0, 1.0),
             moving_up: false,
             moving_left: false,
@@ -38,33 +37,34 @@ impl CameraState {
     }
 
     pub fn update(&mut self, delta_time: f32) {
+        let move_speed = 2.5;
         if self.moving_forward {
             let forward = self.rotation.forward();
-            self.position[0] += forward[0] * 1.0 * delta_time;
-            self.position[1] += forward[1] * 1.0 * delta_time;
-            self.position[2] += forward[2] * 1.0 * delta_time;
+            self.position.x += forward.x * move_speed * delta_time;
+            self.position.y += forward.y * move_speed * delta_time;
+            self.position.z += forward.z * move_speed * delta_time;
         }
         if self.moving_backward {
             let forward = self.rotation.forward();
-            self.position[0] -= forward[0] * 1.0 * delta_time;
-            self.position[1] -= forward[1] * 1.0 * delta_time;
-            self.position[2] -= forward[2] * 1.0 * delta_time;
+            self.position.x -= forward.x * move_speed * delta_time;
+            self.position.y -= forward.y * move_speed * delta_time;
+            self.position.z -= forward.z * move_speed * delta_time;
         }
         if self.moving_left {
             let right = self.rotation.right();
-            self.position[0] -= right[0] * 1.0 * delta_time;
-            self.position[1] -= right[1] * 1.0 * delta_time;
-            self.position[2] -= right[2] * 1.0 * delta_time;
+            self.position.x -= right.x * move_speed * delta_time;
+            self.position.y -= right.y * move_speed * delta_time;
+            self.position.z -= right.z * move_speed * delta_time;
         }
         if self.moving_right {
             let right = self.rotation.right();
-            self.position[0] += right[0] * 1.0 * delta_time;
-            self.position[1] += right[1] * 1.0 * delta_time;
-            self.position[2] += right[2] * 1.0 * delta_time;
+            self.position.x += right.x * move_speed * delta_time;
+            self.position.y += right.y * move_speed * delta_time;
+            self.position.z += right.z * move_speed * delta_time;
         }
     }
 
-    fn rotate(&mut self, axis: [f32; 3], angle: f32) {
+    fn rotate(&mut self, axis: Vector3, angle: f32) {
         let rot = Quaternion::new_axis_angle(axis, angle);
 
         let old_rot = self.rotation;
@@ -81,7 +81,7 @@ impl CameraState {
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
-            [-self.position[0], -self.position[1], -self.position[2], 1.0],
+            [-self.position.x, -self.position.y, -self.position.z, 1.0],
         ]
     }
 
@@ -90,7 +90,8 @@ impl CameraState {
     }
 
     pub fn get_perspective(&self) -> [[f32; 4]; 4] {
-        let fov: f32 = 3.141592 / 2.0;
+        // 60 degrees fov
+        let fov: f32 = 1.04719755;
         let zfar = 1024.0;
         let znear = 0.1;
 
@@ -143,7 +144,7 @@ impl CameraState {
             let right = self.rotation.right();
 
             if mouse_delta_x != 0.0 {
-                self.rotate([0.0, 1.0, 0.0], mouse_delta_x as f32 / 50.0);
+                self.rotate(Vector3::new(0.0, 1.0, 0.0), mouse_delta_x as f32 / 50.0);
             }
             if mouse_delta_y != 0.0 {
                 self.rotate(right, mouse_delta_y as f32 / 50.0);

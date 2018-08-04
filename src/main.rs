@@ -12,6 +12,7 @@ mod quaternion;
 mod renderer;
 mod shader;
 mod texture;
+mod vector;
 
 fn main() {
     use glium::glutin;

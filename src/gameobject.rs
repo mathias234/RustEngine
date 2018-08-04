@@ -2,11 +2,12 @@ extern crate glium;
 use math_helper;
 use model::*;
 use quaternion::Quaternion;
+use vector::Vector3;
 
 pub struct GameObject {
     pub name: String,
     pub model: Model,
-    pub position: [f32; 3],
+    pub position: Vector3,
     pub rotation: Quaternion,
     pub shader_program: glium::Program,
     pub texture: glium::texture::SrgbTexture2d,
@@ -15,7 +16,7 @@ pub struct GameObject {
 impl GameObject {
     pub fn new(
         name: String,
-        position: [f32; 3],
+        position: Vector3,
         rotation: Quaternion,
         model: Model,
         shader_program: glium::Program,
@@ -31,7 +32,7 @@ impl GameObject {
         }
     }
 
-    pub fn rotate(&mut self, axis: [f32; 3], angle: f32) {
+    pub fn rotate(&mut self, axis: Vector3, angle: f32) {
         let rot = Quaternion::new_axis_angle(axis, angle);
 
         let old_rot = self.rotation;
@@ -48,7 +49,7 @@ impl GameObject {
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
-            [self.position[0], self.position[1], self.position[2], 1.0],
+            [self.position.x, self.position.y, self.position.z, 1.0],
         ]
     }
 

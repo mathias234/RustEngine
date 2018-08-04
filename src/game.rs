@@ -7,6 +7,7 @@ use quaternion::Quaternion;
 use renderer::*;
 use shader;
 use texture;
+use vector::Vector3;
 
 pub fn start(display: &glium::Display, context: &mut RenderContext) {
     context.clear_r = 0.0;
@@ -18,7 +19,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
 
     let plane = GameObject::new(
         "plane".to_string(),
-        [0.0, -2.0, 0.0],
+        Vector3::new(0.0, -2.0, 0.0),
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
         plane,
         shader::read_shader_file(&display, "res/basic"),
@@ -27,7 +28,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
 
     let monkey_head = GameObject::new(
         "monkey_head".to_string(),
-        [0.0, 0.0, -10.0],
+        Vector3::new(0.0, 0.0, -10.0),
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
         monkey_head_model,
         shader::read_shader_file(&display, "res/basic"),
@@ -43,7 +44,7 @@ static ANGLE: f32 = 0.5;
 pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update(delta_time);
     let monkey_head = context.get_gameobject("monkey_head".to_string());
-    monkey_head.rotate([0.0, 1.0, 0.0], ANGLE * delta_time);
+    monkey_head.rotate(Vector3::new(0.0, 1.0, 0.0), ANGLE * delta_time);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {
