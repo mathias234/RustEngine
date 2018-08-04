@@ -19,11 +19,6 @@ pub struct CameraState {
     moving_backward: bool,
 
     mouse_locked: bool,
-
-    last_cursor_set: bool,
-
-    input_stopwatch: Stopwatch,
-    input_delta_time: f32,
 }
 
 impl CameraState {
@@ -39,9 +34,6 @@ impl CameraState {
             moving_forward: false,
             moving_backward: false,
             mouse_locked: false,
-            last_cursor_set: false,
-            input_stopwatch: Stopwatch::start_new(),
-            input_delta_time: 0.0,
         }
     }
 
@@ -57,6 +49,18 @@ impl CameraState {
             self.position[0] -= forward[0] * 1.0 * delta_time;
             self.position[1] -= forward[1] * 1.0 * delta_time;
             self.position[2] -= forward[2] * 1.0 * delta_time;
+        }
+        if self.moving_left {
+            let right = self.rotation.right();
+            self.position[0] -= right[0] * 1.0 * delta_time;
+            self.position[1] -= right[1] * 1.0 * delta_time;
+            self.position[2] -= right[2] * 1.0 * delta_time;
+        }
+        if self.moving_right {
+            let right = self.rotation.right();
+            self.position[0] += right[0] * 1.0 * delta_time;
+            self.position[1] += right[1] * 1.0 * delta_time;
+            self.position[2] += right[2] * 1.0 * delta_time;
         }
     }
 
@@ -132,31 +136,23 @@ impl CameraState {
             _ => return,
         };
 
-        if self.mouse_locked {
-            let mouse_delta_x = delta.0;
-            let mouse_delta_y = delta.1;
+        let mouse_delta_x = delta.0;
+        let mouse_delta_y = delta.1;
 
+        if self.mouse_locked {
             let right = self.rotation.right();
 
-            let input_delta = self.input_delta_time;
-
             if mouse_delta_x != 0.0 {
-                self.rotate([0.0, 1.0, 0.0], mouse_delta_x as f32 * 2.0 * input_delta);
+                self.rotate([0.0, 1.0, 0.0], mouse_delta_x as f32 / 50.0);
             }
             if mouse_delta_y != 0.0 {
-                self.rotate(right, mouse_delta_y as f32 * 2.66 * input_delta);
+                self.rotate(right, mouse_delta_y as f32 / 50.0);
             }
         }
-
-        self.last_cursor_set = true;
     }
 
     pub fn process_input(&mut self, event: &glutin::WindowEvent) {
         self.process_key(event);
-
-        let elapsed_time = self.input_stopwatch.elapsed().subsec_nanos();
-        self.input_delta_time = (elapsed_time as f64 / 1_000_000_000.0) as f32;
-        self.input_stopwatch.restart();
     }
 
     pub fn process_input_device(&mut self, event: &glutin::DeviceEvent) {
