@@ -10,12 +10,15 @@ in vec2 texcoord;
 
 out vec2 _texcoord;
 out vec3 _normal;
+out vec3 _frag_pos;
 
 void main() {
     mat4 mvp = persp_matrix * view_matrix * model_matrix;
 
     gl_Position = mvp * vec4(position, 1.0);
     
+    _frag_pos = vec3(model_matrix * vec4(position, 1.0));
+
     _normal = (model_matrix * vec4(normal, 0.0)).xyz;
     _texcoord = texcoord;
 }

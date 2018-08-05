@@ -7,8 +7,8 @@ use vector::Vector3;
 
 pub struct CameraState {
     aspect_ratio: f32,
-    position: Vector3,
-    rotation: Quaternion,
+    pub position: Vector3,
+    pub rotation: Quaternion,
 
     moving_up: bool,
     moving_left: bool,
