@@ -70,7 +70,7 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
             view_matrix: view_mat,
             model_matrix: model_matrix,
             view_pos: context.camera.position.raw(),
-            light: (-1.0, -1.0, -1.0f32),
+            light_dir: (-1.0, -1.0, -1.0f32),
             ambient_light: 0.1 as f32,
             diffuse: &gobj.texture,
         };

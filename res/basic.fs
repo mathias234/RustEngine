@@ -1,6 +1,6 @@
 #version 140
 
-uniform vec3 light;
+uniform vec3 light_dir;
 uniform float ambient_light;
 uniform sampler2D diffuse;
 uniform vec3 view_pos;
@@ -42,5 +42,5 @@ vec4 CalcLight(vec3 direction, vec3 normal, vec3 worldPos)
 
 void main() {
     vec4 diffuseTex = texture(diffuse, _texcoord);
-    result = diffuseTex * (CalcLight(light, _normal, _frag_pos));            
+    result = diffuseTex * (ambient_light + CalcLight(light_dir, _normal, _frag_pos));            
 }
