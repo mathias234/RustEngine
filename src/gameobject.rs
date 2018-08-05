@@ -11,6 +11,7 @@ pub struct GameObject {
     pub rotation: Quaternion,
     pub shader_program: glium::Program,
     pub texture: glium::texture::SrgbTexture2d,
+    pub normal_map: glium::texture::SrgbTexture2d,
 }
 
 impl GameObject {
@@ -21,6 +22,7 @@ impl GameObject {
         model: Model,
         shader_program: glium::Program,
         texture: glium::texture::SrgbTexture2d,
+        normal_map: glium::texture::SrgbTexture2d,
     ) -> GameObject {
         GameObject {
             name: name,
@@ -29,6 +31,7 @@ impl GameObject {
             model: model,
             shader_program: shader_program,
             texture: texture,
+            normal_map: normal_map,
         }
     }
 

@@ -6,8 +6,8 @@ uniform mat4 model_matrix;
 
 in vec3 position;
 in vec3 normal;
-in vec2 texcoord;
 in vec3 tangent;
+in vec2 texcoord;
 
 out vec2 _texcoord;
 out vec3 _normal;

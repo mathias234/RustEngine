@@ -3,12 +3,13 @@
 uniform vec3 light_dir;
 uniform float ambient_light;
 uniform sampler2D diffuse;
+uniform sampler2D normal_map;
 uniform vec3 view_pos;
 
 in vec3 _normal;
 in vec2 _texcoord;
 in vec3 _frag_pos;
-in vec3 _tbn_matrix;
+in mat3 _tbn_matrix;
 
 out vec4 result;
 
@@ -43,5 +44,10 @@ vec4 CalcLight(vec3 direction, vec3 normal, vec3 worldPos)
 
 void main() {
     vec4 diffuseTex = texture(diffuse, _texcoord);
-    result = diffuseTex * (ambient_light + CalcLight(light_dir, _normal, _frag_pos));            
+
+	vec3 normal = texture(normal_map, _texcoord).rgb;
+    normal = normalize(normal * 2.0 - 1.0);
+    normal = normalize(_tbn_matrix * normal);
+
+    result = diffuseTex * (ambient_light + CalcLight(light_dir, normal, _frag_pos));            
 }

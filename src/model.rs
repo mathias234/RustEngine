@@ -12,7 +12,7 @@ pub struct ModelVertex {
     pub texcoord: [f32; 2],
 }
 
-implement_vertex!(ModelVertex, position, normal, texcoord);
+implement_vertex!(ModelVertex, position, normal, tangent, texcoord);
 
 pub struct Model {
     pub vertices: Vec<ModelVertex>,
