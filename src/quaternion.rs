@@ -111,21 +111,21 @@ impl Quaternion {
     }
 
     pub fn to_rotation_matrix(&self) -> [[f32; 4]; 4] {
-        let forward: [f32; 3] = [
+        let forward = Vector3::new(
             2.0 * (self.x * self.z - self.w * self.y),
             2.0 * (self.y * self.z + self.w * self.x),
             1.0 - 2.0 * (self.x * self.x + self.y * self.y),
-        ];
-        let up: [f32; 3] = [
+        );
+        let up = Vector3::new(
             2.0 * (self.x * self.y + self.w * self.z),
             1.0 - 2.0 * (self.x * self.x + self.z * self.z),
             2.0 * (self.y * self.z - self.w * self.x),
-        ];
-        let right: [f32; 3] = [
+        );
+        let right = Vector3::new(
             1.0 - 2.0 * (self.y * self.y + self.z * self.z),
             2.0 * (self.x * self.y - self.w * self.z),
             2.0 * (self.x * self.z + self.w * self.y),
-        ];
+        );
 
         math_helper::rotation_matrix_vec3(forward, up, right)
     }
