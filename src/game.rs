@@ -33,8 +33,8 @@ pub fn start(display: &glium::Display, context: &mut RenderContext) {
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
         monkey_head_model,
         shader::read_shader_file(&display, "res/basic"),
-        texture::load_texture(&display, "res/bricks.jpg".to_string()),
-        texture::load_texture(&display, "res/bricks_nrm.png".to_string()),
+        texture::load_texture(&display, "res/nicebrick.png".to_string()),
+        texture::load_texture(&display, "res/nicebrick_nrm.png".to_string()),
     );
 
     context.models.push(monkey_head);
@@ -47,6 +47,8 @@ pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update(delta_time);
     let monkey_head = context.get_gameobject("monkey_head".to_string());
     monkey_head.rotate(Vector3::new(0.0, 1.0, 0.0), ANGLE * delta_time);
+    monkey_head.rotate(Vector3::new(0.0, 0.0, 1.0), ANGLE * delta_time);
+    monkey_head.rotate(Vector3::new(1.0, 0.0, 0.0), ANGLE * delta_time);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {
