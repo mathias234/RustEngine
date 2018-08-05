@@ -8,6 +8,7 @@ uniform vec3 view_pos;
 in vec3 _normal;
 in vec2 _texcoord;
 in vec3 _frag_pos;
+in vec3 _tbn_matrix;
 
 out vec4 result;
 

@@ -2,17 +2,21 @@ extern crate glium;
 extern crate tobj;
 
 use std::path::Path;
+use vector::Vector3;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct ModelVertex {
     pub position: [f32; 3],
     pub normal: [f32; 3],
+    pub tangent: [f32; 3],
     pub texcoord: [f32; 2],
 }
 
 implement_vertex!(ModelVertex, position, normal, texcoord);
 
 pub struct Model {
+    pub vertices: Vec<ModelVertex>,
+    pub indices: Vec<u16>,
     pub vertex_buffer: glium::VertexBuffer<ModelVertex>,
     pub index_buffer: glium::IndexBuffer<u16>,
 }
@@ -45,6 +49,7 @@ impl Model {
                     mesh.positions[3 * v + 2],
                 ],
                 normal: [0.0, 0.0, 0.0],
+                tangent: [0.0, 0.0, 0.0],
                 texcoord: [0.0, 0.0],
             });
 
@@ -63,6 +68,8 @@ impl Model {
             }
         }
 
+        Model::calculate_tangents(&mut vertices, &indices);
+
         println!("  Length of vertex array: {}", vertices.len());
         println!("  Length of index array: {}", indices.len());
 
@@ -80,8 +87,67 @@ impl Model {
         );
 
         Model {
+            vertices: vertices,
+            indices: indices,
             vertex_buffer: vb,
             index_buffer: ib,
+        }
+    }
+
+    pub fn sub_vec3(l: [f32; 3], r: [f32; 3]) -> [f32; 3] {
+        [l[0] - r[0], l[1] - r[1], l[2] - r[2]]
+    }
+
+    pub fn add_vec3(l: [f32; 3], r: [f32; 3]) -> [f32; 3] {
+        [l[0] + r[0], l[1] + r[1], l[2] + r[2]]
+    }
+
+    pub fn length_vec3(v: [f32; 3]) -> f32 {
+        v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
+    }
+
+    pub fn normalize_vec3(v: [f32; 3]) -> [f32; 3] {
+        let length = Model::length_vec3(v);
+        [v[0] / length, v[1] / length, v[2] / length]
+    }
+
+    pub fn calculate_tangents(vertices: &mut Vec<ModelVertex>, indices: &Vec<u16>) {
+        for i in 0..indices.len() / 3 {
+            let index = i * 3;
+            let i0 = indices[index] as usize;
+            let i1 = indices[index + 1] as usize;
+            let i2 = indices[index + 2] as usize;
+
+            let edge1 = Model::sub_vec3(vertices[i1].position, vertices[i0].position);
+            let edge2 = Model::sub_vec3(vertices[i2].position, vertices[i0].position);
+
+            let deltaU1 = vertices[i1].texcoord[0] - vertices[i0].texcoord[0];
+            let deltaV1 = vertices[i1].texcoord[1] - vertices[i0].texcoord[1];
+            let deltaU2 = vertices[i2].texcoord[0] - vertices[i0].texcoord[0];
+            let deltaV2 = vertices[i2].texcoord[1] - vertices[i0].texcoord[1];
+
+            let dividend = deltaU1 * deltaV2 - deltaU2 * deltaV1;
+
+            let mut f = 0.0;
+            if dividend.abs() < 0.001 {
+                f = 0.0;
+            } else {
+                f = 1.0 / dividend;
+            }
+
+            let tangent = [
+                f * (deltaV2 * edge1[0] - deltaV1 * edge2[0]),
+                f * (deltaV2 * edge1[1] - deltaV1 * edge2[1]),
+                f * (deltaV2 * edge1[2] - deltaV1 * edge2[2]),
+            ];
+
+            vertices[i0].tangent = Model::add_vec3(vertices[i0].tangent, tangent);
+            vertices[i1].tangent = Model::add_vec3(vertices[i1].tangent, tangent);
+            vertices[i2].tangent = Model::add_vec3(vertices[i2].tangent, tangent);
+        }
+
+        for i in 0..vertices.len() {
+            vertices[i].tangent = Model::normalize_vec3(vertices[i].tangent);
         }
     }
 }
