@@ -6,12 +6,12 @@ use vector::Vector3;
 
 pub struct GameObject {
     pub name: String,
-    pub model: Model,
     pub position: Vector3,
     pub rotation: Quaternion,
-    pub shader_program: glium::Program,
-    pub texture: glium::texture::SrgbTexture2d,
-    pub normal_map: glium::texture::SrgbTexture2d,
+    pub model: usize,
+    pub shader_program: usize,
+    pub texture: usize,
+    pub normal_map: usize,
 }
 
 impl GameObject {
@@ -19,10 +19,10 @@ impl GameObject {
         name: String,
         position: Vector3,
         rotation: Quaternion,
-        model: Model,
-        shader_program: glium::Program,
-        texture: glium::texture::SrgbTexture2d,
-        normal_map: glium::texture::SrgbTexture2d,
+        model: usize,
+        shader_program: usize,
+        texture: usize,
+        normal_map: usize,
     ) -> GameObject {
         GameObject {
             name: name,

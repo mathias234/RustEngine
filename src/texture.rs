@@ -1,7 +1,7 @@
 extern crate glium;
 extern crate image;
 
-pub fn load_texture(display: &glium::Display, filename: String) -> glium::texture::SrgbTexture2d {
+pub fn load(display: &glium::Display, filename: String) -> glium::texture::SrgbTexture2d {
     println!("Loading texture: {}", filename);
 
     let image = image::open(filename).unwrap().to_rgba();

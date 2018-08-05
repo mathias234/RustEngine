@@ -10,6 +10,7 @@ mod math_helper;
 mod model;
 mod quaternion;
 mod renderer;
+mod resource_manager;
 mod shader;
 mod texture;
 mod vector;
@@ -27,8 +28,9 @@ fn main() {
     let display = glium::Display::new(window, glutin_context, &events_loop).unwrap();
 
     let mut render_context = renderer::init_renderer();
+    let mut resource_context = resource_manager::ResourceContext::new();
 
-    game::start(&display, &mut render_context);
+    game::start(&display, &mut render_context, &mut resource_context);
 
     let mut sw = Stopwatch::start_new();
     let mut delta_time: f64 = 0.0;
@@ -40,7 +42,7 @@ fn main() {
 
         let mut target = display.draw();
 
-        renderer::update_renderer(&mut render_context, &mut target);
+        renderer::update_renderer(&mut render_context, &mut resource_context, &mut target);
 
         target.finish().unwrap();
 

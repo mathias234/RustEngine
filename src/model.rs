@@ -22,7 +22,7 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn load_model(display: &glium::Display, filename: String) -> Model {
+    pub fn load(display: &glium::Display, filename: String) -> Model {
         use glium::GlObject;
 
         println!("Loading model: {}", filename);
@@ -121,12 +121,12 @@ impl Model {
             let edge1 = Model::sub_vec3(vertices[i1].position, vertices[i0].position);
             let edge2 = Model::sub_vec3(vertices[i2].position, vertices[i0].position);
 
-            let deltaU1 = vertices[i1].texcoord[0] - vertices[i0].texcoord[0];
-            let deltaV1 = vertices[i1].texcoord[1] - vertices[i0].texcoord[1];
-            let deltaU2 = vertices[i2].texcoord[0] - vertices[i0].texcoord[0];
-            let deltaV2 = vertices[i2].texcoord[1] - vertices[i0].texcoord[1];
+            let delta_u1 = vertices[i1].texcoord[0] - vertices[i0].texcoord[0];
+            let delta_v1 = vertices[i1].texcoord[1] - vertices[i0].texcoord[1];
+            let delta_u2 = vertices[i2].texcoord[0] - vertices[i0].texcoord[0];
+            let delta_v2 = vertices[i2].texcoord[1] - vertices[i0].texcoord[1];
 
-            let dividend = deltaU1 * deltaV2 - deltaU2 * deltaV1;
+            let dividend = delta_u1 * delta_v2 - delta_u2 * delta_v1;
 
             let mut f = 0.0;
             if dividend.abs() < 0.001 {
@@ -136,9 +136,9 @@ impl Model {
             }
 
             let tangent = [
-                f * (deltaV2 * edge1[0] - deltaV1 * edge2[0]),
-                f * (deltaV2 * edge1[1] - deltaV1 * edge2[1]),
-                f * (deltaV2 * edge1[2] - deltaV1 * edge2[2]),
+                f * (delta_v2 * edge1[0] - delta_v1 * edge2[0]),
+                f * (delta_v2 * edge1[1] - delta_v1 * edge2[1]),
+                f * (delta_v2 * edge1[2] - delta_v1 * edge2[2]),
             ];
 
             vertices[i0].tangent = Model::add_vec3(vertices[i0].tangent, tangent);

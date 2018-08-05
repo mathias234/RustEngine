@@ -15,7 +15,7 @@ out vec4 result;
 
 vec4 CalcLight(vec3 direction, vec3 normal, vec3 worldPos)
 {
-    float specularIntensity = 1.0;
+    float specularIntensity = 2.0;
     float specularPower = 32;
     float lightIntensity = 1.0;
 

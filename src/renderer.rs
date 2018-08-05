@@ -2,6 +2,7 @@ extern crate glium;
 extern crate tobj;
 use camera::*;
 use gameobject::*;
+use resource_manager::ResourceContext;
 
 pub struct RenderContext {
     pub clear_r: f32,
@@ -37,7 +38,11 @@ pub fn init_renderer() -> RenderContext {
     RenderContext::new()
 }
 
-pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
+pub fn update_renderer(
+    context: &mut RenderContext,
+    resources: &mut ResourceContext,
+    target: &mut glium::Frame,
+) {
     use glium::Surface;
 
     target.clear_color_and_depth(
@@ -59,9 +64,9 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
 
     for i in 0..context.models.len() {
         let gobj = &context.models[i];
-        let program = &gobj.shader_program;
+        let program = resources.get_shader_ref(gobj.shader_program);
 
-        let model = &gobj.model;
+        let model = resources.get_model_ref(gobj.model);
 
         let model_matrix = gobj.get_model_matrix();
 
@@ -72,8 +77,8 @@ pub fn update_renderer(context: &mut RenderContext, target: &mut glium::Frame) {
             view_pos: context.camera.position.raw(),
             light_dir: (-0.5, -1.0, 0.0f32),
             ambient_light: 0.4 as f32,
-            diffuse: &gobj.texture,
-            normal_map: &gobj.normal_map,
+            diffuse: resources.get_tex_ref(gobj.texture),
+            normal_map: resources.get_tex_ref(gobj.normal_map),
         };
 
         target
