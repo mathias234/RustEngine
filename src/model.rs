@@ -130,7 +130,7 @@ impl Model {
 
             let mut f = 0.0;
             if dividend.abs() < 0.001 {
-                f = 0.0;
+                f = 1.0;
             } else {
                 f = 1.0 / dividend;
             }
