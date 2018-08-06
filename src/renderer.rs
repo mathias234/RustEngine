@@ -56,6 +56,7 @@ pub fn update_renderer(
             write: true,
             ..Default::default()
         },
+        backface_culling: glium::BackfaceCullingMode::CullCounterClockwise,
         ..Default::default()
     };
 
