@@ -35,7 +35,7 @@ pub fn start(
     let plane = GameObject::new(
         physics,
         "plane".to_string(),
-        Vector3::new(0.0, -2.0, 0.0),
+        Vector3::new(0.0, -5.0, 0.0),
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
         plane_model,
         basic_shader,
@@ -47,7 +47,19 @@ pub fn start(
     let monkey_head = GameObject::new(
         physics,
         "monkey_head".to_string(),
-        Vector3::new(0.0, 0.0, -10.0),
+        Vector3::new(0.0, 0.0, 10.0),
+        Quaternion::new(0.0, 0.0, 0.0, 1.0),
+        test_model,
+        basic_shader,
+        bricks,
+        bricksnrm,
+        true,
+    );
+
+    let monkey_head2 = GameObject::new(
+        physics,
+        "monkey_head2".to_string(),
+        Vector3::new(0.5, 2.0, 10.0),
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
         test_model,
         basic_shader,
@@ -57,6 +69,7 @@ pub fn start(
     );
 
     context.models.push(monkey_head);
+    context.models.push(monkey_head2);
     context.models.push(plane)
 }
 
@@ -64,10 +77,10 @@ static ANGLE: f32 = 0.5;
 
 pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update(delta_time);
-    let monkey_head = context.get_gameobject("monkey_head".to_string());
-    monkey_head.rotate(Vector3::new(0.0, 1.0, 0.0), ANGLE * delta_time);
-    monkey_head.rotate(Vector3::new(0.0, 0.0, 1.0), ANGLE * delta_time);
-    monkey_head.rotate(Vector3::new(1.0, 0.0, 0.0), ANGLE * delta_time);
+    // let monkey_head = context.get_gameobject("monkey_head".to_string());
+    // monkey_head.rotate(Vector3::new(0.0, 1.0, 0.0), ANGLE * delta_time);
+    // monkey_head.rotate(Vector3::new(0.0, 0.0, 1.0), ANGLE * delta_time);
+    // monkey_head.rotate(Vector3::new(1.0, 0.0, 0.0), ANGLE * delta_time);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {

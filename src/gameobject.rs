@@ -40,10 +40,14 @@ impl GameObject {
         let mut rbody_handle: Option<nphysics3d::object::BodyHandle> = None;
         let mut collision_handle: Option<ncollide3d::world::CollisionObjectHandle> = None;
 
+        let pos = position;
+
         if physics_enabled {
-            rbody_handle = Some(physics.add_cube_rigid_body(Vector3::new(5.0, 1.0, 5.0)));
+            println!("Physics enabled");
+            rbody_handle = Some(physics.add_cube_rigid_body(pos, Vector3::new(5.0, 1.0, 5.0)));
         } else {
-            collision_handle = Some(physics.add_cube_collider(Vector3::new(5.0, 1.0, 5.0)));
+            collision_handle =
+                Some(physics.add_cube_collider(pos, Vector3::new(500.0, 0.1, 500.0)));
         }
 
         GameObject {
@@ -65,6 +69,7 @@ impl GameObject {
             let mut handle = self.rigid_body_handle.unwrap();
 
             self.position = physics.get_rigid_body_pos(&handle);
+            self.rotation = physics.get_rigid_body_rot(&handle);
             println!(
                 "Position: [{}, {}, {}]",
                 self.position.x, self.position.y, self.position.z
