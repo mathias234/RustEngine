@@ -1,6 +1,12 @@
 extern crate glium;
+extern crate ncollide3d;
+extern crate nphysics3d;
+
 use math_helper;
-use model::*;
+use na::{Isometry3, Point3};
+use ncollide3d::shape::{Ball, Cuboid, ShapeHandle};
+use nphysics3d::object::{BodyHandle, Material};
+use physics_engine::PhysicsContext;
 use quaternion::Quaternion;
 use vector::Vector3;
 
@@ -12,10 +18,16 @@ pub struct GameObject {
     pub shader_program: usize,
     pub texture: usize,
     pub normal_map: usize,
+
+    // Physics variables
+    pub physics_enabled: bool,
+    pub rigid_body_handle: Option<nphysics3d::object::BodyHandle>,
+    pub collision_handle: Option<ncollide3d::world::CollisionObjectHandle>,
 }
 
 impl GameObject {
     pub fn new(
+        physics: &mut PhysicsContext,
         name: String,
         position: Vector3,
         rotation: Quaternion,
@@ -23,8 +35,20 @@ impl GameObject {
         shader_program: usize,
         texture: usize,
         normal_map: usize,
+        physics_enabled: bool,
     ) -> GameObject {
+        let mut rbody_handle: Option<nphysics3d::object::BodyHandle> = None;
+        let mut collision_handle: Option<ncollide3d::world::CollisionObjectHandle> = None;
+
+        if physics_enabled {
+            rbody_handle = Some(physics.add_cube_rigid_body(Vector3::new(5.0, 1.0, 5.0)));
+        } else {
+            collision_handle = Some(physics.add_cube_collider(Vector3::new(5.0, 1.0, 5.0)));
+        }
+
         GameObject {
+            rigid_body_handle: rbody_handle,
+            collision_handle: collision_handle,
             name: name,
             position: position,
             rotation: rotation,
@@ -32,6 +56,21 @@ impl GameObject {
             shader_program: shader_program,
             texture: texture,
             normal_map: normal_map,
+            physics_enabled: physics_enabled,
+        }
+    }
+
+    pub fn update(&mut self, physics: &mut PhysicsContext) {
+        if self.physics_enabled {
+            let mut handle = self.rigid_body_handle.unwrap();
+
+            self.position = physics.get_rigid_body_pos(&handle);
+            println!(
+                "Position: [{}, {}, {}]",
+                self.position.x, self.position.y, self.position.z
+            );
+
+            self.rigid_body_handle = Some(handle);
         }
     }
 

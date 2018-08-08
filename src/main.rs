@@ -1,5 +1,8 @@
 #[macro_use]
 extern crate glium;
+extern crate nalgebra as na;
+extern crate ncollide3d;
+extern crate nphysics3d;
 extern crate stopwatch;
 extern crate tobj;
 
@@ -8,6 +11,7 @@ mod game;
 mod gameobject;
 mod math_helper;
 mod model;
+mod physics_engine;
 mod quaternion;
 mod renderer;
 mod resource_manager;
@@ -29,8 +33,14 @@ fn main() {
 
     let mut render_context = renderer::init_renderer();
     let mut resource_context = resource_manager::ResourceContext::new();
+    let mut physics_context = physics_engine::PhysicsContext::new();
 
-    game::start(&display, &mut render_context, &mut resource_context);
+    game::start(
+        &display,
+        &mut render_context,
+        &mut resource_context,
+        &mut physics_context,
+    );
 
     let mut sw = Stopwatch::start_new();
     let mut delta_time: f64 = 0.0;
@@ -38,7 +48,12 @@ fn main() {
     // Game Loop
     let mut closed = false;
     while !closed {
+        physics_context.step();
         game::update(&mut render_context, delta_time as f32);
+
+        for i in 0..render_context.models.len() {
+            render_context.models[i].update(&mut physics_context);
+        }
 
         let mut target = display.draw();
 

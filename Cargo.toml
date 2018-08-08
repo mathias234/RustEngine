@@ -6,6 +6,8 @@ authors = ["Mathias Danielsen <Mathais234@hotmail.com>"]
 [dependencies]
 glium = {version="*"}
 tobj = "0.1.6"
+nalgebra = "0.16"
 nphysics3d = "0.9"
+ncollide3d = "0.17"
 stopwatch = "0.0.7"
 image = "*"

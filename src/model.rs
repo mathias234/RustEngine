@@ -128,7 +128,7 @@ impl Model {
 
             let dividend = delta_u1 * delta_v2 - delta_u2 * delta_v1;
 
-            let mut f = 0.0;
+            let mut f: f32;
             if dividend.abs() < 0.001 {
                 f = 1.0;
             } else {

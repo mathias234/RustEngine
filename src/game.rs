@@ -3,6 +3,7 @@ extern crate glium;
 use gameobject::*;
 use glium::glutin;
 use model::*;
+use physics_engine::PhysicsContext;
 use quaternion::Quaternion;
 use renderer::*;
 use resource_manager::ResourceContext;
@@ -10,7 +11,12 @@ use shader;
 use texture;
 use vector::Vector3;
 
-pub fn start(display: &glium::Display, context: &mut RenderContext, res: &mut ResourceContext) {
+pub fn start(
+    display: &glium::Display,
+    context: &mut RenderContext,
+    res: &mut ResourceContext,
+    physics: &mut PhysicsContext,
+) {
     context.clear_r = 0.0;
     context.clear_b = 0.7;
     context.clear_g = 0.3;
@@ -27,6 +33,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext, res: &mut Re
     let basic_shader = res.alloc_shader(shader::load(&display, "res/basic"));
 
     let plane = GameObject::new(
+        physics,
         "plane".to_string(),
         Vector3::new(0.0, -2.0, 0.0),
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
@@ -34,9 +41,11 @@ pub fn start(display: &glium::Display, context: &mut RenderContext, res: &mut Re
         basic_shader,
         grass,
         grassnrm,
+        false,
     );
 
     let monkey_head = GameObject::new(
+        physics,
         "monkey_head".to_string(),
         Vector3::new(0.0, 0.0, -10.0),
         Quaternion::new(0.0, 0.0, 0.0, 1.0),
@@ -44,6 +53,7 @@ pub fn start(display: &glium::Display, context: &mut RenderContext, res: &mut Re
         basic_shader,
         bricks,
         bricksnrm,
+        true,
     );
 
     context.models.push(monkey_head);
