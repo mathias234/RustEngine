@@ -19,6 +19,7 @@ pub struct Model {
     pub indices: Vec<u16>,
     pub vertex_buffer: glium::VertexBuffer<ModelVertex>,
     pub index_buffer: glium::IndexBuffer<u16>,
+    pub bounding_box: [f32; 3], // Size X, Size Y, Size Z
 }
 
 impl Model {
@@ -86,12 +87,61 @@ impl Model {
             ib.get_id()
         );
 
+        let mut bounding_box = Model::calculate_bounding_box(&mut vertices);
+
         Model {
             vertices: vertices,
             indices: indices,
             vertex_buffer: vb,
             index_buffer: ib,
+            bounding_box: bounding_box,
         }
+    }
+
+    fn calculate_bounding_box(vertices: &mut Vec<ModelVertex>) -> [f32; 3] {
+        let mut min_x: f32 = 50000000.0;
+        let mut max_x: f32 = -50000000.0;
+        let mut min_y: f32 = 50000000.0;
+        let mut max_y: f32 = -50000000.0;
+        let mut min_z: f32 = 50000000.0;
+        let mut max_z: f32 = -50000000.0;
+
+        for i in 0..vertices.len() {
+            let mut vpos = vertices[i].position;
+            if vpos[0] < min_x {
+                min_x = vpos[0];
+            }
+            if vpos[0] > max_x {
+                max_x = vpos[0];
+            }
+
+            if vpos[1] < min_y {
+                min_y = vpos[1];
+            }
+            if vpos[1] > max_y {
+                max_y = vpos[1];
+            }
+
+            if vpos[2] < min_z {
+                min_z = vpos[2];
+            }
+            if vpos[2] > max_z {
+                max_z = vpos[2];
+            }
+        }
+
+        let mut bounding_box = [
+            min_x.abs() + max_x.abs(),
+            min_y.abs() + max_y.abs(),
+            min_z.abs() + max_z.abs(),
+        ];
+
+        println!(
+            "Bounding box is: [{}, {}, {}]",
+            bounding_box[0], bounding_box[1], bounding_box[2]
+        );
+
+        bounding_box
     }
 
     pub fn sub_vec3(l: [f32; 3], r: [f32; 3]) -> [f32; 3] {

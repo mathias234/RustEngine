@@ -51,8 +51,10 @@ fn main() {
         physics_context.step();
         game::update(&mut render_context, delta_time as f32);
 
-        for i in 0..render_context.models.len() {
-            render_context.models[i].update(&mut physics_context);
+        for i in 0..render_context.gameobjects.len() {
+            resource_context
+                .get_gameobject_ref_mut(render_context.gameobjects[i])
+                .update(&mut physics_context);
         }
 
         let mut target = display.draw();

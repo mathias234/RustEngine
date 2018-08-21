@@ -8,7 +8,7 @@ pub struct RenderContext {
     pub clear_r: f32,
     pub clear_g: f32,
     pub clear_b: f32,
-    pub models: Vec<GameObject>,
+    pub gameobjects: Vec<usize>,
     pub camera: CameraState,
 }
 
@@ -19,18 +19,18 @@ impl RenderContext {
             clear_r: 0.0,
             clear_g: 0.0,
             clear_b: 0.0,
-            models: Vec::new(),
+            gameobjects: Vec::new(),
         }
     }
 
-    pub fn get_gameobject(&mut self, name: String) -> &mut GameObject {
-        for i in 0..self.models.len() {
-            if self.models[i].name == name {
-                return &mut self.models[i];
+    pub fn get_gameobject(&mut self, resources: &mut ResourceContext, name: String) -> usize {
+        for i in 0..self.gameobjects.len() {
+            if resources.get_gameobject_ref(self.gameobjects[i]).name == name {
+                return self.gameobjects[i];
             }
         }
 
-        &mut self.models[0]
+        self.gameobjects[0]
     }
 }
 
@@ -63,8 +63,8 @@ pub fn update_renderer(
     let pers_mat = context.camera.get_perspective();
     let view_mat = context.camera.get_view();
 
-    for i in 0..context.models.len() {
-        let gobj = &context.models[i];
+    for i in 0..context.gameobjects.len() {
+        let gobj = resources.get_gameobject_ref(context.gameobjects[i]);
         let program = resources.get_shader_ref(gobj.shader_program);
 
         let model = resources.get_model_ref(gobj.model);

@@ -1,9 +1,12 @@
 extern crate glium;
+use gameobject::GameObject;
 use model::Model;
+
 pub struct ResourceContext {
     texture_resources: Vec<glium::texture::SrgbTexture2d>,
     shader_resources: Vec<glium::Program>,
     model_resources: Vec<Model>,
+    gameobject_resources: Vec<GameObject>,
 }
 
 impl ResourceContext {
@@ -12,6 +15,7 @@ impl ResourceContext {
             texture_resources: Vec::new(),
             shader_resources: Vec::new(),
             model_resources: Vec::new(),
+            gameobject_resources: Vec::new(),
         }
     }
 
@@ -21,18 +25,10 @@ impl ResourceContext {
         return self.texture_resources.len() - 1;
     }
 
-    pub fn get_tex_ref(&self, id: usize) -> &glium::texture::SrgbTexture2d {
-        return &self.texture_resources[id];
-    }
-
     pub fn alloc_shader(&mut self, shader: glium::Program) -> usize {
         self.shader_resources.push(shader);
 
         return self.shader_resources.len() - 1;
-    }
-
-    pub fn get_shader_ref(&self, id: usize) -> &glium::Program {
-        return &self.shader_resources[id];
     }
 
     pub fn alloc_model(&mut self, model: Model) -> usize {
@@ -41,7 +37,41 @@ impl ResourceContext {
         return self.model_resources.len() - 1;
     }
 
+    pub fn alloc_gameobject(&mut self, gameobject: GameObject) -> usize {
+        self.gameobject_resources.push(gameobject);
+
+        return self.gameobject_resources.len() - 1;
+    }
+
+    pub fn get_tex_ref_mut(&mut self, id: usize) -> &mut glium::texture::SrgbTexture2d {
+        return &mut self.texture_resources[id];
+    }
+
+    pub fn get_shader_ref_mut(&mut self, id: usize) -> &mut glium::Program {
+        return &mut self.shader_resources[id];
+    }
+
+    pub fn get_model_ref_mut(&mut self, id: usize) -> &mut Model {
+        return &mut self.model_resources[id];
+    }
+
+    pub fn get_gameobject_ref_mut(&mut self, id: usize) -> &mut GameObject {
+        return &mut self.gameobject_resources[id];
+    }
+
+    pub fn get_tex_ref(&self, id: usize) -> &glium::texture::SrgbTexture2d {
+        return &self.texture_resources[id];
+    }
+
+    pub fn get_shader_ref(&self, id: usize) -> &glium::Program {
+        return &self.shader_resources[id];
+    }
+
     pub fn get_model_ref(&self, id: usize) -> &Model {
         return &self.model_resources[id];
+    }
+
+    pub fn get_gameobject_ref(&self, id: usize) -> &GameObject {
+        return &self.gameobject_resources[id];
     }
 }

@@ -3,11 +3,15 @@ extern crate ncollide3d;
 extern crate nphysics3d;
 
 use math_helper;
+use na::Vector3 as PhysicsVec3;
 use na::{Isometry3, Point3};
 use ncollide3d::shape::{Ball, Cuboid, ShapeHandle};
 use nphysics3d::object::{BodyHandle, Material};
+use nphysics3d::volumetric::Volumetric;
+use physics_engine;
 use physics_engine::PhysicsContext;
 use quaternion::Quaternion;
+use resource_manager::ResourceContext;
 use vector::Vector3;
 
 pub struct GameObject {
@@ -15,6 +19,7 @@ pub struct GameObject {
     pub position: Vector3,
     pub rotation: Quaternion,
     pub model: usize,
+    pub bounding_box: [f32; 3],
     pub shader_program: usize,
     pub texture: usize,
     pub normal_map: usize,
@@ -27,7 +32,7 @@ pub struct GameObject {
 
 impl GameObject {
     pub fn new(
-        physics: &mut PhysicsContext,
+        resources: &mut ResourceContext,
         name: String,
         position: Vector3,
         rotation: Quaternion,
@@ -35,24 +40,12 @@ impl GameObject {
         shader_program: usize,
         texture: usize,
         normal_map: usize,
-        physics_enabled: bool,
     ) -> GameObject {
-        let mut rbody_handle: Option<nphysics3d::object::BodyHandle> = None;
-        let mut collision_handle: Option<ncollide3d::world::CollisionObjectHandle> = None;
-
-        let pos = position;
-
-        if physics_enabled {
-            println!("Physics enabled");
-            rbody_handle = Some(physics.add_cube_rigid_body(pos, Vector3::new(5.0, 1.0, 5.0)));
-        } else {
-            collision_handle =
-                Some(physics.add_cube_collider(pos, Vector3::new(500.0, 0.1, 500.0)));
-        }
+        let bounding_box = resources.get_model_ref(model).bounding_box;
 
         GameObject {
-            rigid_body_handle: rbody_handle,
-            collision_handle: collision_handle,
+            rigid_body_handle: None,
+            collision_handle: None,
             name: name,
             position: position,
             rotation: rotation,
@@ -60,7 +53,8 @@ impl GameObject {
             shader_program: shader_program,
             texture: texture,
             normal_map: normal_map,
-            physics_enabled: physics_enabled,
+            physics_enabled: false,
+            bounding_box: bounding_box,
         }
     }
 
@@ -70,13 +64,61 @@ impl GameObject {
 
             self.position = physics.get_rigid_body_pos(&handle);
             self.rotation = physics.get_rigid_body_rot(&handle);
-            println!(
-                "Position: [{}, {}, {}]",
-                self.position.x, self.position.y, self.position.z
-            );
 
             self.rigid_body_handle = Some(handle);
         }
+    }
+
+    fn get_shape(&self, physics_shape: physics_engine::PhysicsShape) -> Option<ShapeHandle<f32>> {
+        let shape: Option<ShapeHandle<f32>>;
+
+        match physics_shape {
+            physics_engine::PhysicsShape::BoxShape => {
+                shape = Some(ShapeHandle::new(Cuboid::new(PhysicsVec3::new(
+                    self.bounding_box[0] / 2.0,
+                    self.bounding_box[1] / 2.0,
+                    self.bounding_box[2] / 2.0,
+                ))));
+            }
+            physics_engine::PhysicsShape::SphereShape => {
+                shape = Some(ShapeHandle::new(Ball::new(self.bounding_box[0] / 2.0)));
+            }
+        }
+
+        shape
+    }
+
+    pub fn add_collider(
+        mut self,
+        physics_context: &mut PhysicsContext,
+        physics_shape: physics_engine::PhysicsShape,
+    ) -> Self {
+        let shape = self.get_shape(physics_shape);
+
+        if (shape.is_some()) {
+            self.collision_handle =
+                Some(physics_context.add_collider(shape.unwrap(), self.position));
+        } else {
+            panic!("Unable to find a shape for physics object")
+        }
+        self
+    }
+
+    pub fn add_rigidbody(
+        mut self,
+        physics_context: &mut PhysicsContext,
+        physics_shape: physics_engine::PhysicsShape,
+    ) -> Self {
+        let shape = self.get_shape(physics_shape);
+
+        if (shape.is_some()) {
+            self.rigid_body_handle = Some(physics_context.add_rbody(shape.unwrap(), self.position));
+            self.physics_enabled = true;
+        } else {
+            panic!("Unable to find a shape for physics object")
+        }
+
+        self
     }
 
     pub fn rotate(&mut self, axis: Vector3, angle: f32) {

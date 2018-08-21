@@ -2,13 +2,21 @@ extern crate nalgebra as na;
 extern crate ncollide3d;
 extern crate nphysics3d;
 
-use na::{Isometry3, Point3, Vector3};
-use ncollide3d::shape::{Ball, Cuboid, ShapeHandle};
+use model::ModelVertex;
+use na::{Isometry3, Point, Point3, Vector3};
+use ncollide3d::procedural::{IndexBuffer, TriMesh};
+use ncollide3d::shape::{Ball, Compound, ConvexHull, Cuboid, ShapeHandle};
+use ncollide3d::transformation;
 use nphysics3d::object::{BodyHandle, Material};
 use nphysics3d::volumetric::Volumetric;
 use nphysics3d::world::World;
 use quaternion;
 use vector;
+
+pub enum PhysicsShape {
+    SphereShape,
+    BoxShape,
+}
 
 pub struct PhysicsContext {
     world: World<f32>,
@@ -17,7 +25,7 @@ pub struct PhysicsContext {
 impl PhysicsContext {
     pub fn new() -> PhysicsContext {
         let mut world = World::new();
-        world.set_gravity(Vector3::y() * -9.81);
+        world.set_gravity(Vector3::y() * -2.81);
 
         PhysicsContext { world: world }
     }
@@ -51,14 +59,13 @@ impl PhysicsContext {
         }
     }
 
-    pub fn add_cube_rigid_body(
+    pub fn add_rbody(
         &mut self,
+        shape: ShapeHandle<f32>,
         position: vector::Vector3,
-        size: vector::Vector3,
     ) -> nphysics3d::object::BodyHandle {
-        let cuboid = ShapeHandle::new(Ball::new(1.0)); //Cuboid::new(Vector3::new(size.x, size.y, size.z)));
-        let local_inertia = cuboid.inertia(1.0);
-        let local_center_of_mass = cuboid.center_of_mass();
+        let local_inertia = shape.inertia(1.0);
+        let local_center_of_mass = shape.center_of_mass();
 
         let handle = self.world.add_rigid_body(
             Isometry3::new(Vector3::new(position.x, position.y, position.z), na::zero()),
@@ -68,7 +75,7 @@ impl PhysicsContext {
 
         self.world.add_collider(
             0.01,
-            cuboid.clone(),
+            shape.clone(),
             handle,
             Isometry3::identity(),
             Material::default(),
@@ -77,16 +84,14 @@ impl PhysicsContext {
         handle
     }
 
-    pub fn add_cube_collider(
+    pub fn add_collider(
         &mut self,
+        shape: ShapeHandle<f32>,
         position: vector::Vector3,
-        size: vector::Vector3,
     ) -> ncollide3d::world::CollisionObjectHandle {
-        let cuboid = ShapeHandle::new(Cuboid::new(Vector3::new(size.x, size.y, size.z)));
-
         self.world.add_collider(
-            0.01,
-            cuboid,
+            0.1,
+            shape.clone(),
             BodyHandle::ground(),
             Isometry3::new(Vector3::new(position.x, position.y, position.z), na::zero()),
             Material::default(),
