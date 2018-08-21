@@ -37,7 +37,7 @@ impl CameraState {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        let move_speed = 2.5;
+        let move_speed = 5.5;
         if self.moving_forward {
             let forward = self.rotation.forward();
             self.position.x += forward.x * move_speed * delta_time;

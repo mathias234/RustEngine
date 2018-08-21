@@ -42,38 +42,27 @@ pub fn start(
         bricks,
         bricksnrm,
     ).add_collider(physics, PhysicsShape::BoxShape);
-
     let plane = res.alloc_gameobject(plane);
+    context.gameobjects.push(plane);
 
-    let monkey_head = GameObject::new(
-        res,
-        "monkey_head".to_string(),
-        Vector3::new(0.0, 10.0, 0.0),
-        Quaternion::new(0.0, 0.0, 0.0, 1.0),
-        test_model,
-        basic_shader,
-        bricks,
-        bricksnrm,
-    ).add_rigidbody(physics, PhysicsShape::SphereShape);
-
-    let monkey_head = res.alloc_gameobject(monkey_head);
-
-    let monkey_head2 = GameObject::new(
-        res,
-        "monkey_head2".to_string(),
-        Vector3::new(0.5, 20.0, 0.0),
-        Quaternion::new(0.0, 0.0, 0.0, 1.0),
-        test_model,
-        basic_shader,
-        bricks,
-        bricksnrm,
-    ).add_rigidbody(physics, PhysicsShape::SphereShape);
-
-    let monkey_head2 = res.alloc_gameobject(monkey_head2);
-
-    context.gameobjects.push(monkey_head);
-    context.gameobjects.push(monkey_head2);
-    context.gameobjects.push(plane)
+    for x in 0..10 {
+        for y in 0..10 {
+            for z in 0..10 {
+                let sphere = GameObject::new(
+                    res,
+                    "sphere".to_string(),
+                    Vector3::new(x as f32, 10.0 + y as f32, z as f32),
+                    Quaternion::new(0.0, 0.0, 0.0, 1.0),
+                    test_model,
+                    basic_shader,
+                    bricks,
+                    bricksnrm,
+                ).add_rigidbody(physics, PhysicsShape::SphereShape);
+                let sphere = res.alloc_gameobject(sphere);
+                context.gameobjects.push(sphere);
+            }
+        }
+    }
 }
 
 pub fn update(context: &mut RenderContext, delta_time: f32) {
