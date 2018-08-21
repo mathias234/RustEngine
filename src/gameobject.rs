@@ -4,10 +4,7 @@ extern crate nphysics3d;
 
 use math_helper;
 use na::Vector3 as PhysicsVec3;
-use na::{Isometry3, Point3};
 use ncollide3d::shape::{Ball, Cuboid, ShapeHandle};
-use nphysics3d::object::{BodyHandle, Material};
-use nphysics3d::volumetric::Volumetric;
 use physics_engine;
 use physics_engine::PhysicsContext;
 use quaternion::Quaternion;
@@ -30,6 +27,7 @@ pub struct GameObject {
     pub collision_handle: Option<ncollide3d::world::CollisionObjectHandle>,
 }
 
+#[allow(dead_code)]
 impl GameObject {
     pub fn new(
         resources: &mut ResourceContext,
@@ -60,7 +58,7 @@ impl GameObject {
 
     pub fn update(&mut self, physics: &mut PhysicsContext) {
         if self.physics_enabled {
-            let mut handle = self.rigid_body_handle.unwrap();
+            let handle = self.rigid_body_handle.unwrap();
 
             self.position = physics.get_rigid_body_pos(&handle);
             self.rotation = physics.get_rigid_body_rot(&handle);
@@ -95,7 +93,7 @@ impl GameObject {
     ) -> Self {
         let shape = self.get_shape(physics_shape);
 
-        if (shape.is_some()) {
+        if shape.is_some() {
             self.collision_handle =
                 Some(physics_context.add_collider(shape.unwrap(), self.position));
         } else {
@@ -111,7 +109,7 @@ impl GameObject {
     ) -> Self {
         let shape = self.get_shape(physics_shape);
 
-        if (shape.is_some()) {
+        if shape.is_some() {
             self.rigid_body_handle = Some(physics_context.add_rbody(shape.unwrap(), self.position));
             self.physics_enabled = true;
         } else {

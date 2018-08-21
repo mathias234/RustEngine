@@ -9,6 +9,7 @@ pub struct ResourceContext {
     gameobject_resources: Vec<GameObject>,
 }
 
+#[allow(dead_code)]
 impl ResourceContext {
     pub fn new() -> ResourceContext {
         ResourceContext {

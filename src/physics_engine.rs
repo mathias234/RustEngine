@@ -2,11 +2,8 @@ extern crate nalgebra as na;
 extern crate ncollide3d;
 extern crate nphysics3d;
 
-use model::ModelVertex;
-use na::{Isometry3, Point, Point3, Vector3};
-use ncollide3d::procedural::{IndexBuffer, TriMesh};
-use ncollide3d::shape::{Ball, Compound, ConvexHull, Cuboid, ShapeHandle};
-use ncollide3d::transformation;
+use na::{Isometry3, Vector3};
+use ncollide3d::shape::ShapeHandle;
 use nphysics3d::object::{BodyHandle, Material};
 use nphysics3d::volumetric::Volumetric;
 use nphysics3d::world::World;
@@ -38,7 +35,7 @@ impl PhysicsContext {
         &mut self,
         handle: &nphysics3d::object::BodyHandle,
     ) -> vector::Vector3 {
-        let mut pos = (*self.world.rigid_body(*handle).unwrap()).position();
+        let pos = (*self.world.rigid_body(*handle).unwrap()).position();
         vector::Vector3 {
             x: pos.translation.vector.x,
             y: pos.translation.vector.y,
@@ -50,7 +47,7 @@ impl PhysicsContext {
         &mut self,
         handle: &nphysics3d::object::BodyHandle,
     ) -> quaternion::Quaternion {
-        let mut rot = (*self.world.rigid_body(*handle).unwrap()).position();
+        let rot = (*self.world.rigid_body(*handle).unwrap()).position();
         quaternion::Quaternion {
             x: rot.rotation.quaternion()[0],
             y: rot.rotation.quaternion()[1],

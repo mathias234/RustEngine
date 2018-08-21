@@ -9,6 +9,7 @@ pub struct Quaternion {
     pub w: f32,
 }
 
+#[allow(dead_code)]
 impl Quaternion {
     pub fn new(x: f32, y: f32, z: f32, w: f32) -> Quaternion {
         Quaternion {

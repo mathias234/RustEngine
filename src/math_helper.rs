@@ -22,6 +22,7 @@ pub fn mat_mul(l: [[f32; 4]; 4], r: [[f32; 4]; 4]) -> [[f32; 4]; 4] {
     return res;
 }
 
+#[allow(dead_code)]
 pub fn rotation_matrix(x: f32, y: f32, z: f32) -> [[f32; 4]; 4] {
     let cos_x = x.cos();
     let sin_x = x.sin();

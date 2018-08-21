@@ -1,7 +1,6 @@
 extern crate glium;
 extern crate tobj;
 use camera::*;
-use gameobject::*;
 use resource_manager::ResourceContext;
 
 pub struct RenderContext {
@@ -12,6 +11,7 @@ pub struct RenderContext {
     pub camera: CameraState,
 }
 
+#[allow(dead_code)]
 impl RenderContext {
     pub fn new() -> RenderContext {
         RenderContext {

@@ -76,14 +76,8 @@ pub fn start(
     context.gameobjects.push(plane)
 }
 
-static ANGLE: f32 = 0.5;
-
 pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update(delta_time);
-    // let monkey_head = context.get_gameobject("monkey_head".to_string());
-    // monkey_head.rotate(Vector3::new(0.0, 1.0, 0.0), ANGLE * delta_time);
-    // monkey_head.rotate(Vector3::new(0.0, 0.0, 1.0), ANGLE * delta_time);
-    // monkey_head.rotate(Vector3::new(1.0, 0.0, 0.0), ANGLE * delta_time);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {

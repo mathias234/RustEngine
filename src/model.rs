@@ -2,7 +2,6 @@ extern crate glium;
 extern crate tobj;
 
 use std::path::Path;
-use vector::Vector3;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct ModelVertex {
@@ -31,7 +30,7 @@ impl Model {
         let tobj_model = tobj::load_obj(&Path::new(&filename));
         assert!(tobj_model.is_ok());
 
-        let (models, materials) = tobj_model.unwrap();
+        let (models, _) = tobj_model.unwrap();
 
         let mesh = &models[0].mesh;
 
@@ -87,7 +86,7 @@ impl Model {
             ib.get_id()
         );
 
-        let mut bounding_box = Model::calculate_bounding_box(&mut vertices);
+        let bounding_box = Model::calculate_bounding_box(&mut vertices);
 
         Model {
             vertices: vertices,
@@ -130,7 +129,7 @@ impl Model {
             }
         }
 
-        let mut bounding_box = [
+        let bounding_box = [
             min_x.abs() + max_x.abs(),
             min_y.abs() + max_y.abs(),
             min_z.abs() + max_z.abs(),
