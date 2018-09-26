@@ -1,6 +1,7 @@
 extern crate glium;
 extern crate tobj;
 
+use colored::*;
 use std::path::Path;
 use stopwatch::Stopwatch;
 
@@ -28,7 +29,9 @@ impl Model {
         let sw = Stopwatch::start_new();
 
         let tobj_model = tobj::load_obj(&Path::new(&filename));
-        assert!(tobj_model.is_ok());
+        if !tobj_model.is_ok() {
+            println!("{}", "Failed to load model".red());
+        }
 
         let (models, _) = tobj_model.unwrap();
 
@@ -82,7 +85,12 @@ impl Model {
 
         let bounding_box = Model::calculate_bounding_box(&mut vertices);
 
-        println!("Model file loaded, took {}ms\n", sw.elapsed_ms());
+        println!(
+            "{}{}{}",
+            "Model file loaded, took ".green(),
+            sw.elapsed_ms().to_string().green(),
+            "ms \n".green()
+        );
 
         Model {
             vertices: vertices,

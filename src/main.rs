@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate glium;
+extern crate colored;
 extern crate nalgebra as na;
 extern crate ncollide3d;
 extern crate nphysics3d;

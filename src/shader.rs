@@ -1,5 +1,6 @@
 extern crate glium;
 
+use colored::*;
 use std::fs::File;
 use std::io::prelude::*;
 use stopwatch::Stopwatch;
@@ -27,7 +28,12 @@ pub fn load(display: &glium::Display, filename: &str) -> glium::Program {
         glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None)
             .unwrap();
 
-    println!("Shader file loaded, took {}ms", sw.elapsed_ms());
+    println!(
+        "{}{}{}",
+        "Shader file loaded, took ".green(),
+        sw.elapsed_ms().to_string().green(),
+        "ms \n".green()
+    );
 
     return program;
 }
