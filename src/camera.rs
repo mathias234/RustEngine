@@ -6,9 +6,15 @@ use quaternion::Quaternion;
 use vector::Vector3;
 
 pub struct CameraState {
-    aspect_ratio: f32,
     pub position: Vector3,
     pub rotation: Quaternion,
+
+    recalc_proj: bool,
+    recalc_view: bool,
+    view_matrix: [[f32; 4]; 4],
+    proj_matrix: [[f32; 4]; 4],
+
+    aspect_ratio: f32,
 
     moving_up: bool,
     moving_left: bool,
@@ -23,9 +29,14 @@ pub struct CameraState {
 impl CameraState {
     pub fn new(screen_width: i32, screen_height: i32) -> CameraState {
         CameraState {
-            aspect_ratio: screen_width as f32 / screen_height as f32,
             position: Vector3::new(0.0, 0.0, 0.0),
             rotation: Quaternion::new(0.0, 0.0, 0.0, 1.0),
+
+            recalc_proj: true,
+            recalc_view: true,
+            view_matrix: math_helper::new_matrix(),
+            proj_matrix: math_helper::new_matrix(),
+            aspect_ratio: screen_width as f32 / screen_height as f32,
             moving_up: false,
             moving_left: false,
             moving_down: false,
@@ -38,6 +49,7 @@ impl CameraState {
 
     pub fn resize(&mut self, width: i32, height: i32) {
         self.aspect_ratio = width as f32 / height as f32;
+        self.recalc_proj = true;
     }
 
     pub fn update(&mut self, delta_time: f32) {
@@ -47,24 +59,28 @@ impl CameraState {
             self.position.x += forward.x * move_speed * delta_time;
             self.position.y += forward.y * move_speed * delta_time;
             self.position.z += forward.z * move_speed * delta_time;
+            self.recalc_view = true;
         }
         if self.moving_backward {
             let forward = self.rotation.forward();
             self.position.x -= forward.x * move_speed * delta_time;
             self.position.y -= forward.y * move_speed * delta_time;
             self.position.z -= forward.z * move_speed * delta_time;
+            self.recalc_view = true;
         }
         if self.moving_left {
             let right = self.rotation.right();
             self.position.x -= right.x * move_speed * delta_time;
             self.position.y -= right.y * move_speed * delta_time;
             self.position.z -= right.z * move_speed * delta_time;
+            self.recalc_view = true;
         }
         if self.moving_right {
             let right = self.rotation.right();
             self.position.x += right.x * move_speed * delta_time;
             self.position.y += right.y * move_speed * delta_time;
             self.position.z += right.z * move_speed * delta_time;
+            self.recalc_view = true;
         }
     }
 
@@ -74,6 +90,7 @@ impl CameraState {
         let old_rot = self.rotation;
 
         self.rotation = rot.mul_quat(old_rot);
+        self.recalc_view = true;
     }
 
     fn get_rotation_matrix(&self) -> [[f32; 4]; 4] {
@@ -89,25 +106,37 @@ impl CameraState {
         ]
     }
 
-    pub fn get_view(&self) -> [[f32; 4]; 4] {
-        math_helper::mat_mul(self.get_translation_matrix(), self.get_rotation_matrix())
+    pub fn get_view(&mut self) -> [[f32; 4]; 4] {
+        if self.recalc_view {
+            self.view_matrix =
+                math_helper::mat_mul(self.get_translation_matrix(), self.get_rotation_matrix());
+        }
+
+        self.recalc_view = false;
+
+        self.view_matrix
     }
 
-    pub fn get_perspective(&self) -> [[f32; 4]; 4] {
-        // 60 degrees fov
-        let fov: f32 = 1.04719755;
-        let zfar = 1024.0;
-        let znear = 0.1;
+    pub fn get_perspective(&mut self) -> [[f32; 4]; 4] {
+        if self.recalc_proj {
+            // 60 degrees fov
+            let fov: f32 = 1.04719755;
+            let zfar = 1024.0;
+            let znear = 0.1;
 
-        let f = 1.0 / (fov / 2.0).tan();
+            let f = 1.0 / (fov / 2.0).tan();
 
-        // note: remember that this is column-major, so the lines of code are actually columns
-        [
-            [f / self.aspect_ratio, 0.0, 0.0, 0.0],
-            [0.0, f, 0.0, 0.0],
-            [0.0, 0.0, (zfar + znear) / (zfar - znear), 1.0],
-            [0.0, 0.0, -(2.0 * zfar * znear) / (zfar - znear), 0.0],
-        ]
+            // note: remember that this is column-major, so the lines of code are actually columns
+            self.proj_matrix = [
+                [f / self.aspect_ratio, 0.0, 0.0, 0.0],
+                [0.0, f, 0.0, 0.0],
+                [0.0, 0.0, (zfar + znear) / (zfar - znear), 1.0],
+                [0.0, 0.0, -(2.0 * zfar * znear) / (zfar - znear), 0.0],
+            ];
+        }
+        self.recalc_proj = false;
+
+        self.proj_matrix
     }
 
     fn process_key(&mut self, event: &glutin::WindowEvent) {
