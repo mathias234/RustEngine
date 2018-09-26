@@ -4,9 +4,7 @@ use camera::*;
 use resource_manager::ResourceContext;
 
 pub struct RenderContext {
-    pub clear_r: f32,
-    pub clear_g: f32,
-    pub clear_b: f32,
+    pub clear_color: [f32; 3],
     pub gameobjects: Vec<usize>,
     pub camera: CameraState,
 }
@@ -16,9 +14,7 @@ impl RenderContext {
     pub fn new() -> RenderContext {
         RenderContext {
             camera: CameraState::new(1024, 768),
-            clear_r: 0.0,
-            clear_g: 0.0,
-            clear_b: 0.0,
+            clear_color: [0.0, 0.0, 0.0],
             gameobjects: Vec::new(),
         }
     }
@@ -46,7 +42,12 @@ pub fn update_renderer(
     use glium::Surface;
 
     target.clear_color_and_depth(
-        (context.clear_r, context.clear_g, context.clear_b, 1.0),
+        (
+            context.clear_color[0],
+            context.clear_color[1],
+            context.clear_color[2],
+            1.0,
+        ),
         1.0,
     );
 
@@ -65,7 +66,7 @@ pub fn update_renderer(
 
     for i in 0..context.gameobjects.len() {
         let gobj = resources.get_gameobject_ref(context.gameobjects[i]);
-        let material =gobj.material;
+        let material = gobj.material;
         let program = resources.get_shader_ref(material.shader_prog);
 
         let model = resources.get_model_ref(gobj.model);
@@ -81,6 +82,8 @@ pub fn update_renderer(
             ambient_light: 0.4 as f32,
             diffuse: resources.get_tex_ref(material.diffuse_tex),
             normal_map: resources.get_tex_ref(material.normal_tex),
+            color: material.color,
+            tiling: material.tiling,
         };
 
         target
@@ -90,7 +93,6 @@ pub fn update_renderer(
                 &program,
                 &uniforms,
                 &params,
-            )
-            .unwrap();
+            ).unwrap();
     }
 }

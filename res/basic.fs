@@ -5,6 +5,8 @@ uniform float ambient_light;
 uniform sampler2D diffuse;
 uniform sampler2D normal_map;
 uniform vec3 view_pos;
+uniform vec3 color;
+uniform vec2 tiling;
 
 in vec3 _normal;
 in vec2 _texcoord;
@@ -43,11 +45,14 @@ vec4 CalcLight(vec3 direction, vec3 normal, vec3 worldPos)
 }
 
 void main() {
-    vec4 diffuseTex = texture(diffuse, _texcoord);
+    vec2 texcoord = _texcoord * tiling;
 
-	vec3 normal = texture(normal_map, _texcoord).rgb;
+    vec4 diffuseTex = texture(diffuse, texcoord);
+
+	vec3 normal = texture(normal_map, texcoord).rgb;
     normal = normalize(normal * 2.0 - 1.0);
     normal = normalize(_tbn_matrix * normal);
 
     result = diffuseTex * (ambient_light + CalcLight(light_dir, normal, _frag_pos));            
+    result *= vec4(color, 1);
 }
