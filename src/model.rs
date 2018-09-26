@@ -2,6 +2,7 @@ extern crate glium;
 extern crate tobj;
 
 use std::path::Path;
+use stopwatch::Stopwatch;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct ModelVertex {
@@ -23,9 +24,8 @@ pub struct Model {
 
 impl Model {
     pub fn load(display: &glium::Display, filename: String) -> Model {
-        use glium::GlObject;
-
         println!("Loading model: {}", filename);
+        let sw = Stopwatch::start_new();
 
         let tobj_model = tobj::load_obj(&Path::new(&filename));
         assert!(tobj_model.is_ok());
@@ -70,8 +70,8 @@ impl Model {
 
         Model::calculate_tangents(&mut vertices, &indices);
 
-        println!("  Length of vertex array: {}", vertices.len());
-        println!("  Length of index array: {}", indices.len());
+        // println!("  Length of vertex array: {}", vertices.len());
+        // println!("  Length of index array: {}", indices.len());
 
         let vb = glium::VertexBuffer::new(display, &vertices).unwrap();
         let ib = glium::IndexBuffer::new(
@@ -80,13 +80,9 @@ impl Model {
             &indices,
         ).unwrap();
 
-        println!(
-            "Successfully loaded model, (Vertex ID: {}), (Index ID: {})",
-            vb.get_id(),
-            ib.get_id()
-        );
-
         let bounding_box = Model::calculate_bounding_box(&mut vertices);
+
+        println!("Model file loaded, took {}ms\n", sw.elapsed_ms());
 
         Model {
             vertices: vertices,
@@ -134,11 +130,6 @@ impl Model {
             min_y.abs() + max_y.abs(),
             min_z.abs() + max_z.abs(),
         ];
-
-        println!(
-            "Bounding box is: [{}, {}, {}]",
-            bounding_box[0], bounding_box[1], bounding_box[2]
-        );
 
         bounding_box
     }

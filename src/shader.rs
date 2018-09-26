@@ -2,8 +2,12 @@ extern crate glium;
 
 use std::fs::File;
 use std::io::prelude::*;
+use stopwatch::Stopwatch;
 
 pub fn load(display: &glium::Display, filename: &str) -> glium::Program {
+    println!("Loading shader: {}", filename);
+    let sw = Stopwatch::start_new();
+
     let vs_shader = filename.to_owned() + ".vs";
     let fs_shader = filename.to_owned() + ".fs";
 
@@ -23,7 +27,7 @@ pub fn load(display: &glium::Display, filename: &str) -> glium::Program {
         glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None)
             .unwrap();
 
-    println!("Successfully loaded shader, (Name: {})", filename);
+    println!("Shader file loaded, took {}ms", sw.elapsed_ms());
 
     return program;
 }

@@ -21,8 +21,11 @@ mod texture;
 mod vector;
 
 fn main() {
-    let win_width = 1024;
-    let win_height = 768;
+    // skip a few lines in the console
+    println!("\n\n\n");
+
+    let mut win_width = 1024;
+    let mut win_height = 768;
 
     use glium::glutin;
     use stopwatch::Stopwatch;
@@ -75,7 +78,9 @@ fn main() {
             glutin::Event::WindowEvent { event, .. } => match event {
                 glutin::WindowEvent::CloseRequested => closed = true,
                 glutin::WindowEvent::Resized(logical_size) => {
-                    render_context.resized(logical_size.width as i32, logical_size.height as i32)
+                    render_context.resized(logical_size.width as i32, logical_size.height as i32);
+                    win_width = logical_size.width as i32;
+                    win_height = logical_size.height as i32;
                 }
                 ev => game::process_input(&mut render_context, &ev),
             },
