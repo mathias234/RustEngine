@@ -11,9 +11,9 @@ pub struct RenderContext {
 
 #[allow(dead_code)]
 impl RenderContext {
-    pub fn new() -> RenderContext {
+    pub fn new(win_width: i32, win_height: i32) -> RenderContext {
         RenderContext {
-            camera: CameraState::new(1024, 768),
+            camera: CameraState::new(win_width, win_height),
             clear_color: [0.0, 0.0, 0.0],
             gameobjects: Vec::new(),
         }
@@ -28,13 +28,13 @@ impl RenderContext {
 
         self.gameobjects[0]
     }
+
+    pub fn resized(&mut self, width: i32, height: i32) {
+        self.camera.resize(width, height);
+    }
 }
 
-pub fn init_renderer() -> RenderContext {
-    RenderContext::new()
-}
-
-pub fn update_renderer(
+pub fn render(
     context: &mut RenderContext,
     resources: &mut ResourceContext,
     target: &mut glium::Frame,

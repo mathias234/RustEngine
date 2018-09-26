@@ -36,6 +36,10 @@ impl CameraState {
         }
     }
 
+    pub fn resize(&mut self, width: i32, height: i32) {
+        self.aspect_ratio = width as f32 / height as f32;
+    }
+
     pub fn update(&mut self, delta_time: f32) {
         let move_speed = 5.5;
         if self.moving_forward {

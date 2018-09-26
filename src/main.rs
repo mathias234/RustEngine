@@ -9,6 +9,7 @@ extern crate tobj;
 mod camera;
 mod game;
 mod gameobject;
+mod material;
 mod math_helper;
 mod model;
 mod physics_engine;
@@ -18,9 +19,11 @@ mod resource_manager;
 mod shader;
 mod texture;
 mod vector;
-mod material;
 
 fn main() {
+    let win_width = 1024;
+    let win_height = 768;
+
     use glium::glutin;
     use stopwatch::Stopwatch;
 
@@ -28,11 +31,15 @@ fn main() {
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("Rust Engine")
-        .with_dimensions(glutin::dpi::LogicalSize::new(1024.0, 768.0));
+        .with_dimensions(glutin::dpi::LogicalSize::new(
+            win_width as f64,
+            win_height as f64,
+        ));
+
     let glutin_context = glutin::ContextBuilder::new().with_vsync(true);
     let display = glium::Display::new(window, glutin_context, &events_loop).unwrap();
 
-    let mut render_context = renderer::init_renderer();
+    let mut render_context = renderer::RenderContext::new(win_width, win_height);
     let mut resource_context = resource_manager::ResourceContext::new();
     let mut physics_context = physics_engine::PhysicsContext::new();
 
@@ -60,13 +67,16 @@ fn main() {
 
         let mut target = display.draw();
 
-        renderer::update_renderer(&mut render_context, &mut resource_context, &mut target);
+        renderer::render(&mut render_context, &mut resource_context, &mut target);
 
         target.finish().unwrap();
 
         events_loop.poll_events(|ev| match ev {
             glutin::Event::WindowEvent { event, .. } => match event {
                 glutin::WindowEvent::CloseRequested => closed = true,
+                glutin::WindowEvent::Resized(logical_size) => {
+                    render_context.resized(logical_size.width as i32, logical_size.height as i32)
+                }
                 ev => game::process_input(&mut render_context, &ev),
             },
             glutin::Event::DeviceEvent { event, .. } => match event {
