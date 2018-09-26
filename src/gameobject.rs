@@ -10,6 +10,7 @@ use physics_engine::PhysicsContext;
 use quaternion::Quaternion;
 use resource_manager::ResourceContext;
 use vector::Vector3;
+use material::*;
 
 pub struct GameObject {
     pub name: String,
@@ -17,9 +18,7 @@ pub struct GameObject {
     pub rotation: Quaternion,
     pub model: usize,
     pub bounding_box: [f32; 3],
-    pub shader_program: usize,
-    pub texture: usize,
-    pub normal_map: usize,
+    pub material: Material,
 
     // Physics variables
     pub physics_enabled: bool,
@@ -35,9 +34,7 @@ impl GameObject {
         position: Vector3,
         rotation: Quaternion,
         model: usize,
-        shader_program: usize,
-        texture: usize,
-        normal_map: usize,
+        material: Material,
     ) -> GameObject {
         let bounding_box = resources.get_model_ref(model).bounding_box;
 
@@ -48,9 +45,7 @@ impl GameObject {
             position: position,
             rotation: rotation,
             model: model,
-            shader_program: shader_program,
-            texture: texture,
-            normal_map: normal_map,
+            material: material,
             physics_enabled: false,
             bounding_box: bounding_box,
         }

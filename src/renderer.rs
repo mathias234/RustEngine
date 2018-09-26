@@ -65,7 +65,8 @@ pub fn update_renderer(
 
     for i in 0..context.gameobjects.len() {
         let gobj = resources.get_gameobject_ref(context.gameobjects[i]);
-        let program = resources.get_shader_ref(gobj.shader_program);
+        let material =gobj.material;
+        let program = resources.get_shader_ref(material.shader_prog);
 
         let model = resources.get_model_ref(gobj.model);
 
@@ -78,8 +79,8 @@ pub fn update_renderer(
             view_pos: context.camera.position.raw(),
             light_dir: (-0.5, -1.0, 0.0f32),
             ambient_light: 0.4 as f32,
-            diffuse: resources.get_tex_ref(gobj.texture),
-            normal_map: resources.get_tex_ref(gobj.normal_map),
+            diffuse: resources.get_tex_ref(material.diffuse_tex),
+            normal_map: resources.get_tex_ref(material.normal_tex),
         };
 
         target

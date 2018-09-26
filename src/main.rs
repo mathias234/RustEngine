@@ -18,6 +18,7 @@ mod resource_manager;
 mod shader;
 mod texture;
 mod vector;
+mod material;
 
 fn main() {
     use glium::glutin;

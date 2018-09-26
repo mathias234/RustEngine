@@ -59,7 +59,7 @@ impl ResourceContext {
     pub fn get_gameobject_ref_mut(&mut self, id: usize) -> &mut GameObject {
         return &mut self.gameobject_resources[id];
     }
-
+    
     pub fn get_tex_ref(&self, id: usize) -> &glium::texture::SrgbTexture2d {
         return &self.texture_resources[id];
     }
