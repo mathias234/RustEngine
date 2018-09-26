@@ -31,7 +31,7 @@ pub fn start(
 
     let basic_shader = res.alloc_shader(shader::load(&display, "res/basic"));
 
-    let grass_material = Material::new(basic_shader, grass, grassnrm, [1.0, 1.0, 1.0], [1.0, 1.0]);
+    let grass_material = Material::new(basic_shader, grass, grassnrm, [1.0, 1.0, 1.0], [3.0, 3.0]);
     let brick_material =
         Material::new(basic_shader, bricks, bricksnrm, [1.0, 1.0, 1.0], [1.0, 1.0]);
 
@@ -49,9 +49,9 @@ pub fn start(
     let plane = res.alloc_gameobject(plane);
     context.gameobjects.push(plane);
 
-    for x in 0..2 {
-        for y in 0..2 {
-            for z in 0..2 {
+    for x in 0..5 {
+        for y in 0..5 {
+            for z in 0..5 {
                 let a = (x + y + z) % 2;
 
                 if a == 1 {
