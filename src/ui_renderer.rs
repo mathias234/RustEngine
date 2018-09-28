@@ -7,6 +7,7 @@ use shader;
 
 pub enum UIType {
     Quad,
+    Button,
 }
 
 pub struct UIElement {
@@ -21,10 +22,21 @@ pub struct UIElement {
 pub struct UIContext {
     pub win_width: f32,
     pub win_height: f32,
+
+    pub left_mouse_down: bool,
+    pub right_mouse_down: bool,
+
+    pub last_left_state: bool,
+    pub last_right_state: bool,
+
+    pub mouse_x: f32,
+    pub mouse_y: f32,
+
     elements: Vec<UIElement>,
     program: glium::Program,
 }
 
+#[allow(dead_code)]
 impl UIContext {
     pub fn new(display: &glium::Display, width: f32, height: f32) -> UIContext {
         UIContext {
@@ -32,6 +44,12 @@ impl UIContext {
             program: shader::load(&display, "res/ui_basic"),
             win_width: width,
             win_height: height,
+            left_mouse_down: false,
+            right_mouse_down: false,
+            last_left_state: false,
+            last_right_state: false,
+            mouse_x: 0.0,
+            mouse_y: 0.0,
         }
     }
 
@@ -58,6 +76,44 @@ impl UIContext {
         })
     }
 
+    pub fn render_button(
+        &mut self,
+        texture: usize,
+        center_x: f32,
+        center_y: f32,
+        width: f32,
+        height: f32,
+    ) -> bool {
+        self.elements.push(UIElement {
+            ui_type: UIType::Button,
+            texture: texture,
+            center_x: center_x,
+            center_y: center_y,
+            width: width,
+            height: height,
+        });
+
+        let mouse_x = self.mouse_x;
+        let mouse_y = (self.mouse_y - self.win_height).abs(); // flip y since the window is top left, but the ui is bottom left
+
+        let mut result = false;
+
+        if self.left_mouse_down && !self.last_left_state {
+            // check if we are inside the box
+            if mouse_x > -width + center_x
+                && mouse_x < width + center_x
+                && mouse_y > -height + center_y
+                && mouse_y < height + center_y
+            {
+                result = true;
+            }
+        }
+
+        self.last_left_state = self.left_mouse_down;
+
+        result
+    }
+
     pub fn draw_frame(
         &mut self,
         resources: &ResourceContext,
@@ -69,6 +125,7 @@ impl UIContext {
             let element = &self.elements[i];
             match element.ui_type {
                 UIType::Quad => draw_quad(self, element, resources, target, display),
+                UIType::Button => draw_button(self, element, resources, target, display),
             }
         }
 
@@ -84,7 +141,17 @@ pub struct UIVertex {
 
 implement_vertex!(UIVertex, position, texcoords);
 
-pub fn draw_quad(
+fn draw_button(
+    context: &UIContext,
+    element: &UIElement,
+    resources: &ResourceContext,
+    target: &mut glium::Frame,
+    display: &glium::Display,
+) {
+    draw_quad(context, element, resources, target, display);
+}
+
+fn draw_quad(
     context: &UIContext,
     element: &UIElement,
     resources: &ResourceContext,
@@ -142,13 +209,6 @@ pub fn draw_quad(
         -1.0,
         1.0,
     );
-
-    let model_matrix = [
-        [1.0, 0.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0, 0.0],
-        [0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ];
 
     let texture = resources.get_tex_ref(element.texture);
 

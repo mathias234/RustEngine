@@ -88,10 +88,46 @@ fn main() {
                     win_height = logical_size.height as i32;
                     ui_context.screen_resize(win_width as f32, win_height as f32);
                 }
-                ev => game_state.process_input(&mut render_context, &ev),
+                ev => {
+                    game_state.process_input(&mut render_context, &ev);
+
+                    let position = match ev {
+                        glutin::WindowEvent::CursorMoved { position, .. } => Some(position),
+                        _ => None,
+                    };
+
+                    if position.is_some() {
+                        let position = position.unwrap();
+                        ui_context.mouse_x = position.x as f32;
+                        ui_context.mouse_y = position.y as f32;
+                    }
+
+                    match ev {
+                        glutin::WindowEvent::MouseInput { button, state, .. } => match button {
+                            glutin::MouseButton::Left => {
+                                if state == glutin::ElementState::Pressed {
+                                    ui_context.left_mouse_down = true;
+                                } else {
+                                    ui_context.left_mouse_down = false;
+                                }
+                            }
+                            glutin::MouseButton::Right => {
+                                if state == glutin::ElementState::Pressed {
+                                    ui_context.right_mouse_down = true;
+                                } else {
+                                    ui_context.right_mouse_down = false;
+                                }
+                            }
+                            _ => (),
+                        },
+                        _ => (),
+                    };
+                }
             },
             glutin::Event::DeviceEvent { event, .. } => match event {
-                ev => game_state.process_input_device(&mut render_context, &ev),
+                ev => {
+                    game_state.process_input_device(&mut render_context, &ev);
+                }
             },
             _ => (),
         });

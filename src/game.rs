@@ -104,9 +104,9 @@ impl GameState {
         let width = ui.win_width;
         let height = ui.win_height;
 
-        ui.render_quad(self.grass, 120.0, height - 120.0, 120.0, 120.0);
-
-        ui.render_quad(self.bricks, width - 120.0, height - 120.0, 120.0, 120.0);
+        if ui.render_button(self.bricks, width - 55.0, height - 55.0, 50.0, 50.0) {
+            println!("Click");
+        }
     }
 
     pub fn process_input(&mut self, context: &mut RenderContext, event: &glutin::WindowEvent) {
