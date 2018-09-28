@@ -2,6 +2,7 @@
 extern crate glium;
 use glium::Surface;
 use math_helper;
+use resource_manager::*;
 use shader;
 
 pub enum UIType {
@@ -10,6 +11,7 @@ pub enum UIType {
 
 pub struct UIElement {
     ui_type: UIType,
+    texture: usize,
     center_x: f32,
     center_y: f32,
     width: f32,
@@ -17,14 +19,14 @@ pub struct UIElement {
 }
 
 pub struct UIContext {
-    win_width: i32,
-    win_height: i32,
+    pub win_width: f32,
+    pub win_height: f32,
     elements: Vec<UIElement>,
     program: glium::Program,
 }
 
 impl UIContext {
-    pub fn new(display: &glium::Display, width: i32, height: i32) -> UIContext {
+    pub fn new(display: &glium::Display, width: f32, height: f32) -> UIContext {
         UIContext {
             elements: Vec::new(),
             program: shader::load(&display, "res/ui_basic"),
@@ -33,14 +35,22 @@ impl UIContext {
         }
     }
 
-    pub fn screen_resize(&mut self, win_width: i32, win_height: i32) {
+    pub fn screen_resize(&mut self, win_width: f32, win_height: f32) {
         self.win_width = win_width;
-        self.win_height = win_width;
+        self.win_height = win_height;
     }
 
-    pub fn render_quad(&mut self, center_x: f32, center_y: f32, width: f32, height: f32) {
+    pub fn render_quad(
+        &mut self,
+        texture: usize,
+        center_x: f32,
+        center_y: f32,
+        width: f32,
+        height: f32,
+    ) {
         self.elements.push(UIElement {
             ui_type: UIType::Quad,
+            texture: texture,
             center_x: center_x,
             center_y: center_y,
             width: width,
@@ -48,13 +58,21 @@ impl UIContext {
         })
     }
 
-    pub fn draw_frame(&mut self, target: &mut glium::Frame, display: &glium::Display) {
+    pub fn draw_frame(
+        &mut self,
+        resources: &ResourceContext,
+        target: &mut glium::Frame,
+        display: &glium::Display,
+    ) {
+        self.elements.reverse();
         for i in 0..self.elements.len() {
             let element = &self.elements[i];
             match element.ui_type {
-                UIType::Quad => draw_quad(self, element, target, display),
+                UIType::Quad => draw_quad(self, element, resources, target, display),
             }
         }
+
+        self.elements.clear();
     }
 }
 
@@ -69,6 +87,7 @@ implement_vertex!(UIVertex, position, texcoords);
 pub fn draw_quad(
     context: &UIContext,
     element: &UIElement,
+    resources: &ResourceContext,
     target: &mut glium::Frame,
     display: &glium::Display,
 ) {
@@ -89,19 +108,19 @@ pub fn draw_quad(
 
     let quad_vertices = [
         UIVertex {
-            position: [-width, -width, 0.0],
+            position: [-width + center_x, -height + center_y, 0.0],
             texcoords: [0.0, 0.0],
         },
         UIVertex {
-            position: [width, -width, 0.0],
+            position: [width + center_x, -height + center_y, 0.0],
             texcoords: [1.0, 0.0],
         },
         UIVertex {
-            position: [width, width, 0.0],
+            position: [width + center_x, height + center_y, 0.0],
             texcoords: [1.0, 1.0],
         },
         UIVertex {
-            position: [-width, width, 0.0],
+            position: [-width + center_x, height + center_y, 0.0],
             texcoords: [0.0, 1.0],
         },
     ];
@@ -131,8 +150,11 @@ pub fn draw_quad(
         [0.0, 0.0, 0.0, 1.0],
     ];
 
+    let texture = resources.get_tex_ref(element.texture);
+
     let uniforms = uniform! {
         ortho_matrix: ortho_matrix,
+        ui_texture: texture,
     };
 
     target

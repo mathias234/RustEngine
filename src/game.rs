@@ -88,7 +88,13 @@ pub fn update(context: &mut RenderContext, delta_time: f32) {
 }
 
 pub fn render_gui(ui: &mut UIContext) {
-    ui.render_quad(0.5, 0.5, 50.0, 50.0);
+    // copy the width and height variables of ui context
+    let width = ui.win_width;
+    let height = ui.win_height;
+
+    ui.render_quad(0, 120.0, height - 120.0, 120.0, 120.0);
+
+    ui.render_quad(2, width - 120.0, height - 120.0, 120.0, 120.0);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {
