@@ -10,6 +10,7 @@ use renderer::*;
 use resource_manager::ResourceContext;
 use shader;
 use texture;
+use ui_renderer::*;
 use vector::Vector3;
 
 pub fn start(
@@ -84,6 +85,10 @@ pub fn start(
 
 pub fn update(context: &mut RenderContext, delta_time: f32) {
     context.camera.update(delta_time);
+}
+
+pub fn render_gui(ui: &mut UIContext) {
+    ui.render_quad(0.5, 0.5, 50.0, 50.0);
 }
 
 pub fn process_input(context: &mut RenderContext, event: &glutin::WindowEvent) {

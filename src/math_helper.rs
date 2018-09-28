@@ -9,6 +9,15 @@ pub fn new_matrix() -> [[f32; 4]; 4] {
     ]
 }
 
+pub fn identity_matrix() -> [[f32; 4]; 4] {
+    [
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+}
+
 pub fn mat_mul(l: [[f32; 4]; 4], r: [[f32; 4]; 4]) -> [[f32; 4]; 4] {
     let mut res: [[f32; 4]; 4] = new_matrix();
 
@@ -20,6 +29,24 @@ pub fn mat_mul(l: [[f32; 4]; 4], r: [[f32; 4]; 4]) -> [[f32; 4]; 4] {
     }
 
     return res;
+}
+
+pub fn ortho_matrix(
+    left: f32,
+    right: f32,
+    bottom: f32,
+    top: f32,
+    z_near: f32,
+    z_far: f32,
+) -> [[f32; 4]; 4] {
+    let mut result = identity_matrix();
+    result[0][0] = (2.0) / (right - left);
+    result[1][1] = (2.0) / (top - bottom);
+    result[2][2] = -(2.0) / (z_far - z_near);
+    result[3][0] = -(right + left) / (right - left);
+    result[3][1] = -(top + bottom) / (top - bottom);
+    result[3][2] = -(z_far + z_near) / (z_far - z_near);
+    result
 }
 
 #[allow(dead_code)]

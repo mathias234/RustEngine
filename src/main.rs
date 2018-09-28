@@ -19,6 +19,7 @@ mod renderer;
 mod resource_manager;
 mod shader;
 mod texture;
+mod ui_renderer;
 mod vector;
 
 fn main() {
@@ -46,6 +47,7 @@ fn main() {
     let mut render_context = renderer::RenderContext::new(win_width, win_height);
     let mut resource_context = resource_manager::ResourceContext::new();
     let mut physics_context = physics_engine::PhysicsContext::new();
+    let mut ui_context = ui_renderer::UIContext::new(&display, win_width, win_height);
 
     game::start(
         &display,
@@ -72,6 +74,9 @@ fn main() {
         let mut target = display.draw();
 
         renderer::render(&mut render_context, &mut resource_context, &mut target);
+        game::render_gui(&mut ui_context);
+
+        ui_context.draw_frame(&mut target, &display);
 
         target.finish().unwrap();
 
@@ -82,6 +87,7 @@ fn main() {
                     render_context.resized(logical_size.width as i32, logical_size.height as i32);
                     win_width = logical_size.width as i32;
                     win_height = logical_size.height as i32;
+                    ui_context.screen_resize(win_width, win_height);
                 }
                 ev => game::process_input(&mut render_context, &ev),
             },
