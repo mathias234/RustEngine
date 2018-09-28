@@ -48,8 +48,7 @@ fn main() {
     let mut resource_context = resource_manager::ResourceContext::new();
     let mut physics_context = physics_engine::PhysicsContext::new();
     let mut ui_context = ui_renderer::UIContext::new(&display, win_width as f32, win_height as f32);
-
-    game::start(
+    let mut game_state = game::GameState::start(
         &display,
         &mut render_context,
         &mut resource_context,
@@ -63,7 +62,7 @@ fn main() {
     let mut closed = false;
     while !closed {
         physics_context.step();
-        game::update(&mut render_context, delta_time as f32);
+        game_state.update(&mut render_context, delta_time as f32);
 
         for i in 0..render_context.gameobjects.len() {
             resource_context
@@ -74,7 +73,7 @@ fn main() {
         let mut target = display.draw();
 
         renderer::render(&mut render_context, &mut resource_context, &mut target);
-        game::render_gui(&mut ui_context);
+        game_state.render_gui(&mut ui_context);
 
         ui_context.draw_frame(&resource_context, &mut target, &display);
 
@@ -89,10 +88,10 @@ fn main() {
                     win_height = logical_size.height as i32;
                     ui_context.screen_resize(win_width as f32, win_height as f32);
                 }
-                ev => game::process_input(&mut render_context, &ev),
+                ev => game_state.process_input(&mut render_context, &ev),
             },
             glutin::Event::DeviceEvent { event, .. } => match event {
-                ev => game::process_input_device(&mut render_context, &ev),
+                ev => game_state.process_input_device(&mut render_context, &ev),
             },
             _ => (),
         });
