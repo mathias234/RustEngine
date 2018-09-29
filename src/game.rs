@@ -1,4 +1,5 @@
 extern crate glium;
+extern crate rand;
 
 use gameobject::*;
 use glium::glutin;
@@ -108,7 +109,7 @@ impl GameState {
             println!("Click");
         }
 
-        ui.render_text("Hello World!", width / 2.0, height / 2.0);
+        ui.render_text("Hello World!", 0.0, height / 2.0, 30.0, 5.0);
     }
 
     pub fn process_input(&mut self, context: &mut RenderContext, event: &glutin::WindowEvent) {

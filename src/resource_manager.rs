@@ -1,12 +1,15 @@
 extern crate glium;
 use gameobject::GameObject;
 use model::Model;
+use std::collections::HashMap;
 
 pub struct ResourceContext {
     texture_resources: Vec<glium::texture::SrgbTexture2d>,
     shader_resources: Vec<glium::Program>,
     model_resources: Vec<Model>,
     gameobject_resources: Vec<GameObject>,
+
+    glyph_storage: HashMap<char, usize>,
 }
 
 #[allow(dead_code)]
@@ -17,7 +20,21 @@ impl ResourceContext {
             shader_resources: Vec::new(),
             model_resources: Vec::new(),
             gameobject_resources: Vec::new(),
+            glyph_storage: HashMap::new(),
         }
+    }
+
+    pub fn store_glyph(&mut self, character: char, texture: usize) {
+        self.glyph_storage.insert(character, texture);
+    }
+
+    pub fn get_glyph(&mut self, character: char) -> Option<usize> {
+        if self.glyph_storage.contains_key(&character) {
+            let glyph = self.glyph_storage.get(&character).unwrap();
+            return Some(*glyph);
+        }
+
+        return None;
     }
 
     pub fn alloc_tex(&mut self, tex: glium::texture::SrgbTexture2d) -> usize {
@@ -59,7 +76,7 @@ impl ResourceContext {
     pub fn get_gameobject_ref_mut(&mut self, id: usize) -> &mut GameObject {
         return &mut self.gameobject_resources[id];
     }
-    
+
     pub fn get_tex_ref(&self, id: usize) -> &glium::texture::SrgbTexture2d {
         return &self.texture_resources[id];
     }

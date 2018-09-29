@@ -15,12 +15,15 @@ pub enum UIType {
 
 pub struct UIElement {
     ui_type: UIType,
-    text: Vec<char>,
     texture: usize,
     center_x: f32,
     center_y: f32,
     width: f32,
     height: f32,
+
+    // text spesific
+    text: Vec<char>,
+    font_resolution: f32,
 }
 
 pub struct UIContext {
@@ -62,7 +65,14 @@ impl UIContext {
         self.win_height = win_height;
     }
 
-    pub fn render_text(&mut self, text: &str, center_x: f32, center_y: f32) {
+    pub fn render_text(
+        &mut self,
+        text: &str,
+        center_x: f32,
+        center_y: f32,
+        font_size: f32,
+        font_resolution: f32,
+    ) {
         let mut chars: Vec<char> = Vec::new();
 
         for ch in text.chars() {
@@ -71,12 +81,14 @@ impl UIContext {
 
         self.elements.push(UIElement {
             ui_type: UIType::Text,
-            text: chars,
             texture: 0,
             center_x: center_x,
             center_y: center_y,
             width: 0.0,
-            height: 0.0,
+            height: font_size,
+            // text spesific
+            text: chars,
+            font_resolution: font_resolution,
         })
     }
 
@@ -90,12 +102,15 @@ impl UIContext {
     ) {
         self.elements.push(UIElement {
             ui_type: UIType::Quad,
-            text: Vec::new(),
             texture: texture,
             center_x: center_x,
             center_y: center_y,
             width: width,
             height: height,
+
+            // text spesific
+            text: Vec::new(),
+            font_resolution: 0.0,
         })
     }
 
@@ -109,12 +124,15 @@ impl UIContext {
     ) -> bool {
         self.elements.push(UIElement {
             ui_type: UIType::Button,
-            text: Vec::new(),
             texture: texture,
             center_x: center_x,
             center_y: center_y,
             width: width,
             height: height,
+
+            // text spesific
+            text: Vec::new(),
+            font_resolution: 0.0,
         });
 
         let mouse_x = self.mouse_x;
@@ -182,7 +200,7 @@ fn draw_text(
         panic!("Error turning font collection into a font: {}", e);
     });
 
-    let height: f32 = 25.0;
+    let height: f32 = element.height * element.font_resolution;
     let pixel_height = height.ceil() as usize;
 
     let scale = Scale {
@@ -200,33 +218,44 @@ fn draw_text(
     }
 
     let glyphs: Vec<PositionedGlyph> = font.layout(&text, scale, offset).collect();
-    let width = glyphs
+    /* let width = glyphs
         .iter()
         .rev()
         .map(|g| g.position().x as f32 + g.unpositioned().h_metrics().advance_width)
         .next()
         .unwrap_or(0.0)
         .ceil() as usize;
+    */
+
+    let mut i = 0;
 
     for g in glyphs {
         if let Some(bb) = g.pixel_bounding_box() {
-            let mut pixels = vec![0.0 as f32; (bb.width() as usize * bb.height() as usize) * 4];
+            let mut tex: usize = 0;
 
-            g.draw(|x, y, v| {
-                let idx: usize = (x + y * bb.width() as u32) as usize * 4;
-                pixels[idx] = v as f32;
-                pixels[idx + 1] = v as f32;
-                pixels[idx + 2] = v as f32;
-                pixels[idx + 3] = v as f32;
-            });
+            if !resources.get_glyph(element.text[i]).is_some() {
+                let mut pixels = vec![0.0 as f32; (bb.width() as usize * bb.height() as usize) * 4];
 
-            let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(
-                &pixels,
-                (bb.width() as u32, bb.height() as u32),
-            );
+                g.draw(|x, y, v| {
+                    let idx: usize = (x + y * bb.width() as u32) as usize * 4;
+                    pixels[idx] = v as f32;
+                    pixels[idx + 1] = v as f32;
+                    pixels[idx + 2] = v as f32;
+                    pixels[idx + 3] = v as f32;
+                });
 
-            let tex = resources
-                .alloc_tex(glium::texture::SrgbTexture2d::new(display, raw_image).unwrap());
+                let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(
+                    &pixels,
+                    (bb.width() as u32, bb.height() as u32),
+                );
+
+                tex = resources
+                    .alloc_tex(glium::texture::SrgbTexture2d::new(display, raw_image).unwrap());
+
+                resources.store_glyph(element.text[i], tex);
+            } else {
+                tex = resources.get_glyph(element.text[i]).unwrap();
+            }
 
             let min_x = bb.min.x as f32;
             let min_y = (bb.min.y - bb.height()).abs() as f32;
@@ -234,21 +263,24 @@ fn draw_text(
             let max_x = bb.max.x as f32;
             let max_y = (bb.max.y - bb.height()).abs() as f32;
 
-            let center_x = (min_x + max_x) / 2.0;
-            let center_y = (min_y + max_y) / 2.0;
+            let center_x = ((min_x + max_x) / 2.0) / element.font_resolution;
+            let center_y = ((min_y + max_y) / 2.0) / element.font_resolution;
 
             let ui = UIElement {
                 ui_type: UIType::Quad,
-                text: Vec::new(),
                 texture: tex,
                 center_x: element.center_x + center_x,
                 center_y: element.center_x + center_y,
-                width: bb.width() as f32 / 2.0,
-                height: bb.height() as f32 / 2.0,
+                width: (bb.width() as f32 / 2.0) / element.font_resolution,
+                height: (bb.height() as f32 / 2.0) / element.font_resolution,
+
+                text: Vec::new(),
+                font_resolution: 0.0,
             };
 
             draw_quad(context, &ui, resources, target, display);
         }
+        i += 1;
     }
 }
 
