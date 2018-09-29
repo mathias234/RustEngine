@@ -17,6 +17,7 @@ use vector::Vector3;
 pub struct GameState {
     bricks: usize,
     grass: usize,
+    text_size: f32,
 }
 
 impl GameState {
@@ -93,6 +94,7 @@ impl GameState {
         GameState {
             bricks: bricks,
             grass: grass,
+            text_size: 25.0,
         }
     }
 
@@ -105,15 +107,42 @@ impl GameState {
         let width = ui.win_width;
         let height = ui.win_height;
 
-        if ui.render_button(self.bricks, width - 55.0, height - 55.0, 50.0, 50.0) {
+        let button_center_x = width / 2.0;
+        let button_center_y = height / 2.0;
+
+        if ui.render_button(self.bricks, button_center_x, button_center_y, 50.0, 50.0) {
             println!("Click");
         }
 
-        ui.render_text("Hello World!", 0.0, height / 2.0, 30.0, 5.0);
+        ui.render_text(
+            "Hello World!....",
+            button_center_x,
+            button_center_y,
+            self.text_size,
+            50.0,
+        );
     }
 
     pub fn process_input(&mut self, context: &mut RenderContext, event: &glutin::WindowEvent) {
         context.camera.process_input(event);
+
+        let input = match *event {
+            glutin::WindowEvent::KeyboardInput { input, .. } => input,
+            _ => return,
+        };
+
+        let pressed = input.state == glutin::ElementState::Pressed;
+
+        let key = match input.virtual_keycode {
+            Some(key) => key,
+            None => return,
+        };
+
+        match key {
+            glutin::VirtualKeyCode::V => self.text_size += 0.5,
+            glutin::VirtualKeyCode::B => self.text_size -= 0.5,
+            _ => (),
+        };
     }
 
     pub fn process_input_device(

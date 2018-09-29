@@ -76,11 +76,7 @@ fn main() {
         renderer::render(&mut render_context, &mut resource_context, &mut target);
         game_state.render_gui(&mut ui_context);
 
-        let ui_watch = Stopwatch::start_new();
-
         ui_context.draw_frame(&mut resource_context, &mut target, &display);
-
-        println!("UI took {}ms to render", ui_watch.elapsed_ms());
 
         target.finish().unwrap();
 

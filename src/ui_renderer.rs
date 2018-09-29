@@ -162,7 +162,7 @@ impl UIContext {
         target: &mut glium::Frame,
         display: &glium::Display,
     ) {
-        self.elements.reverse();
+        // self.elements.reverse();
         for i in 0..self.elements.len() {
             let element = &self.elements[i];
             match element.ui_type {
@@ -191,7 +191,7 @@ fn draw_text(
     target: &mut glium::Frame,
     display: &glium::Display,
 ) {
-    let font_data = include_bytes!("../res/fonts/arial.ttf");
+    let font_data = include_bytes!("../res/fonts/Arial.ttf");
     let collection = FontCollection::from_bytes(font_data as &[u8]).unwrap_or_else(|e| {
         panic!("Error constructing a Font Collection from bytes: {}", e);
     });
@@ -218,14 +218,13 @@ fn draw_text(
     }
 
     let glyphs: Vec<PositionedGlyph> = font.layout(&text, scale, offset).collect();
-    /* let width = glyphs
+    let width = glyphs
         .iter()
         .rev()
         .map(|g| g.position().x as f32 + g.unpositioned().h_metrics().advance_width)
         .next()
         .unwrap_or(0.0)
         .ceil() as usize;
-    */
 
     let mut i = 0;
 
@@ -238,9 +237,9 @@ fn draw_text(
 
                 g.draw(|x, y, v| {
                     let idx: usize = (x + y * bb.width() as u32) as usize * 4;
-                    pixels[idx] = v as f32;
-                    pixels[idx + 1] = v as f32;
-                    pixels[idx + 2] = v as f32;
+                    pixels[idx] = 1 as f32;
+                    pixels[idx + 1] = 1 as f32;
+                    pixels[idx + 2] = 1 as f32;
                     pixels[idx + 3] = v as f32;
                 });
 
@@ -258,19 +257,27 @@ fn draw_text(
             }
 
             let min_x = bb.min.x as f32;
-            let min_y = (bb.min.y - bb.height()).abs() as f32;
+            let min_y = bb.min.y as f32;
 
             let max_x = bb.max.x as f32;
-            let max_y = (bb.max.y - bb.height()).abs() as f32;
+            let max_y = bb.max.y as f32;
 
-            let center_x = ((min_x + max_x) / 2.0) / element.font_resolution;
-            let center_y = ((min_y + max_y) / 2.0) / element.font_resolution;
+            let mut center_x = ((min_x + max_x) / 2.0);
+            let mut center_y = ((min_y + max_y) / 2.0);
+
+            center_x = center_x - width as f32 / 2.0;
+            center_y = center_y + bb.height() as f32;
+
+            center_y = center_y - height as f32;
+
+            center_x = center_x / element.font_resolution;
+            center_y = center_y / element.font_resolution;
 
             let ui = UIElement {
                 ui_type: UIType::Quad,
                 texture: tex,
                 center_x: element.center_x + center_x,
-                center_y: element.center_x + center_y,
+                center_y: element.center_y + center_y,
                 width: (bb.width() as f32 / 2.0) / element.font_resolution,
                 height: (bb.height() as f32 / 2.0) / element.font_resolution,
 
@@ -304,7 +311,7 @@ fn draw_quad(
     let params = glium::DrawParameters {
         depth: glium::Depth {
             test: glium::DepthTest::IfLess,
-            write: true,
+            write: false,
             ..Default::default()
         },
         backface_culling: glium::BackfaceCullingMode::CullingDisabled,
