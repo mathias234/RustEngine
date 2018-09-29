@@ -2,7 +2,7 @@
 
 Rust Engine is a 3D rendering framework written entierly in rust.
 
-This project was mostly made as a project for learning rust.
+This project was made as a project for learning rust, and should not be considered for real game projects but as a learning project.
 
 # Features
 - 3D graphics using [glium](https://github.com/glium/glium) as a backend
