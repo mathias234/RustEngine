@@ -4,6 +4,7 @@ extern crate colored;
 extern crate nalgebra as na;
 extern crate ncollide3d;
 extern crate nphysics3d;
+extern crate rusttype;
 extern crate stopwatch;
 extern crate tobj;
 
@@ -75,7 +76,7 @@ fn main() {
         renderer::render(&mut render_context, &mut resource_context, &mut target);
         game_state.render_gui(&mut ui_context);
 
-        ui_context.draw_frame(&resource_context, &mut target, &display);
+        ui_context.draw_frame(&mut resource_context, &mut target, &display);
 
         target.finish().unwrap();
 

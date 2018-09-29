@@ -107,6 +107,8 @@ impl GameState {
         if ui.render_button(self.bricks, width - 55.0, height - 55.0, 50.0, 50.0) {
             println!("Click");
         }
+
+        ui.render_text("Hello World!", width / 2.0, height / 2.0);
     }
 
     pub fn process_input(&mut self, context: &mut RenderContext, event: &glutin::WindowEvent) {

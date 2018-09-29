@@ -1,17 +1,21 @@
 // an immediate mode ui renderer
 extern crate glium;
+
 use glium::Surface;
 use math_helper;
 use resource_manager::*;
+use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use shader;
 
 pub enum UIType {
     Quad,
     Button,
+    Text,
 }
 
 pub struct UIElement {
     ui_type: UIType,
+    text: Vec<char>,
     texture: usize,
     center_x: f32,
     center_y: f32,
@@ -58,6 +62,24 @@ impl UIContext {
         self.win_height = win_height;
     }
 
+    pub fn render_text(&mut self, text: &str, center_x: f32, center_y: f32) {
+        let mut chars: Vec<char> = Vec::new();
+
+        for ch in text.chars() {
+            chars.push(ch);
+        }
+
+        self.elements.push(UIElement {
+            ui_type: UIType::Text,
+            text: chars,
+            texture: 0,
+            center_x: center_x,
+            center_y: center_y,
+            width: 0.0,
+            height: 0.0,
+        })
+    }
+
     pub fn render_quad(
         &mut self,
         texture: usize,
@@ -68,6 +90,7 @@ impl UIContext {
     ) {
         self.elements.push(UIElement {
             ui_type: UIType::Quad,
+            text: Vec::new(),
             texture: texture,
             center_x: center_x,
             center_y: center_y,
@@ -86,6 +109,7 @@ impl UIContext {
     ) -> bool {
         self.elements.push(UIElement {
             ui_type: UIType::Button,
+            text: Vec::new(),
             texture: texture,
             center_x: center_x,
             center_y: center_y,
@@ -116,7 +140,7 @@ impl UIContext {
 
     pub fn draw_frame(
         &mut self,
-        resources: &ResourceContext,
+        resources: &mut ResourceContext,
         target: &mut glium::Frame,
         display: &glium::Display,
     ) {
@@ -126,6 +150,7 @@ impl UIContext {
             match element.ui_type {
                 UIType::Quad => draw_quad(self, element, resources, target, display),
                 UIType::Button => draw_button(self, element, resources, target, display),
+                UIType::Text => draw_text(self, element, resources, target, display),
             }
         }
 
@@ -141,10 +166,96 @@ pub struct UIVertex {
 
 implement_vertex!(UIVertex, position, texcoords);
 
+fn draw_text(
+    context: &UIContext,
+    element: &UIElement,
+    resources: &mut ResourceContext,
+    target: &mut glium::Frame,
+    display: &glium::Display,
+) {
+    let font_data = include_bytes!("../res/fonts/arial.ttf");
+    let collection = FontCollection::from_bytes(font_data as &[u8]).unwrap_or_else(|e| {
+        panic!("Error constructing a Font Collection from bytes: {}", e);
+    });
+
+    let font = collection.into_font().unwrap_or_else(|e| {
+        panic!("Error turning font collection into a font: {}", e);
+    });
+
+    let height: f32 = 25.0;
+    let pixel_height = height.ceil() as usize;
+
+    let scale = Scale {
+        x: height * 2.0,
+        y: height,
+    };
+
+    let v_metrics = font.v_metrics(scale);
+    let offset = point(0.0, v_metrics.ascent);
+
+    let mut text: String = "".to_owned();
+
+    for i in 0..element.text.len() {
+        text += &element.text[i].to_string();
+    }
+
+    let glyphs: Vec<PositionedGlyph> = font.layout(&text, scale, offset).collect();
+    let width = glyphs
+        .iter()
+        .rev()
+        .map(|g| g.position().x as f32 + g.unpositioned().h_metrics().advance_width)
+        .next()
+        .unwrap_or(0.0)
+        .ceil() as usize;
+
+    for g in glyphs {
+        if let Some(bb) = g.pixel_bounding_box() {
+            let mut pixels = vec![0.0 as f32; (bb.width() as usize * bb.height() as usize) * 4];
+
+            g.draw(|x, y, v| {
+                let idx: usize = (x + y * bb.width() as u32) as usize * 4;
+                pixels[idx] = v as f32;
+                pixels[idx + 1] = v as f32;
+                pixels[idx + 2] = v as f32;
+                pixels[idx + 3] = v as f32;
+            });
+
+            let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(
+                &pixels,
+                (bb.width() as u32, bb.height() as u32),
+            );
+
+            let tex = resources
+                .alloc_tex(glium::texture::SrgbTexture2d::new(display, raw_image).unwrap());
+
+            let min_x = bb.min.x as f32;
+            let min_y = (bb.min.y - bb.height()).abs() as f32;
+
+            let max_x = bb.max.x as f32;
+            let max_y = (bb.max.y - bb.height()).abs() as f32;
+
+            let center_x = (min_x + max_x) / 2.0;
+            let center_y = (min_y + max_y) / 2.0;
+
+            let ui = UIElement {
+                ui_type: UIType::Quad,
+                text: Vec::new(),
+                texture: tex,
+                center_x: element.center_x + center_x,
+                center_y: element.center_x + center_y,
+                width: bb.width() as f32 / 2.0,
+                height: bb.height() as f32 / 2.0,
+            };
+
+            draw_quad(context, &ui, resources, target, display);
+        }
+    }
+}
+
 fn draw_button(
     context: &UIContext,
     element: &UIElement,
-    resources: &ResourceContext,
+    resources: &mut ResourceContext,
     target: &mut glium::Frame,
     display: &glium::Display,
 ) {
@@ -154,7 +265,7 @@ fn draw_button(
 fn draw_quad(
     context: &UIContext,
     element: &UIElement,
-    resources: &ResourceContext,
+    resources: &mut ResourceContext,
     target: &mut glium::Frame,
     display: &glium::Display,
 ) {
@@ -165,6 +276,7 @@ fn draw_quad(
             ..Default::default()
         },
         backface_culling: glium::BackfaceCullingMode::CullingDisabled,
+        blend: glium::draw_parameters::Blend::alpha_blending(),
         ..Default::default()
     };
 
