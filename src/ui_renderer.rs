@@ -7,26 +7,8 @@ use resource_manager::*;
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use shader;
 
-pub enum UIType {
-    Quad,
-    Button,
-    Text,
-}
-
-pub struct UIElement {
-    ui_type: UIType,
-    texture: usize,
-    center_x: f32,
-    center_y: f32,
-    width: f32,
-    height: f32,
-
-    // text spesific
-    text: Vec<char>,
-    font_resolution: f32,
-}
-
 pub struct UIContext {
+    pub style: UIStyle,
     pub win_width: f32,
     pub win_height: f32,
 
@@ -43,10 +25,40 @@ pub struct UIContext {
     program: glium::Program,
 }
 
+enum UIType {
+    Quad,
+    Button,
+    Text,
+}
+
+struct UIElement {
+    ui_type: UIType,
+    style: UIStyle,
+    texture: usize,
+    center_x: f32,
+    center_y: f32,
+    width: f32,
+    height: f32,
+
+    // text spesific
+    text: Vec<char>,
+    font_resolution: f32,
+}
+
+#[derive(Copy, Clone)]
+pub struct UIStyle {
+    quad_color: [f32; 4],
+    font_color: [f32; 4],
+}
+
 #[allow(dead_code)]
 impl UIContext {
     pub fn new(display: &glium::Display, width: f32, height: f32) -> UIContext {
         UIContext {
+            style: UIStyle {
+                quad_color: [1.0, 1.0, 1.0, 1.0],
+                font_color: [1.0, 1.0, 1.0, 1.0],
+            },
             elements: Vec::new(),
             program: shader::load(&display, "res/ui_basic"),
             win_width: width,
@@ -58,6 +70,14 @@ impl UIContext {
             mouse_x: 0.0,
             mouse_y: 0.0,
         }
+    }
+
+    pub fn set_quad_color(&mut self, color: [f32; 4]) {
+        self.style.quad_color = color;
+    }
+
+    pub fn set_font_color(&mut self, color: [f32; 4]) {
+        self.style.font_color = color;
     }
 
     pub fn screen_resize(&mut self, win_width: f32, win_height: f32) {
@@ -80,6 +100,7 @@ impl UIContext {
         }
 
         self.elements.push(UIElement {
+            style: self.style,
             ui_type: UIType::Text,
             texture: 0,
             center_x: center_x,
@@ -101,6 +122,7 @@ impl UIContext {
         height: f32,
     ) {
         self.elements.push(UIElement {
+            style: self.style,
             ui_type: UIType::Quad,
             texture: texture,
             center_x: center_x,
@@ -123,6 +145,7 @@ impl UIContext {
         height: f32,
     ) -> bool {
         self.elements.push(UIElement {
+            style: self.style,
             ui_type: UIType::Button,
             texture: texture,
             center_x: center_x,
@@ -166,7 +189,7 @@ impl UIContext {
         for i in 0..self.elements.len() {
             let element = &self.elements[i];
             match element.ui_type {
-                UIType::Quad => draw_quad(self, element, resources, target, display),
+                UIType::Quad => draw_quad(self, element, resources, target, display, false),
                 UIType::Button => draw_button(self, element, resources, target, display),
                 UIType::Text => draw_text(self, element, resources, target, display),
             }
@@ -201,7 +224,7 @@ fn draw_text(
     });
 
     let height: f32 = element.height * element.font_resolution;
-    let pixel_height = height.ceil() as usize;
+    //let pixel_height = height.ceil() as usize;
 
     let scale = Scale {
         x: height * 2.0,
@@ -230,7 +253,7 @@ fn draw_text(
 
     for g in glyphs {
         if let Some(bb) = g.pixel_bounding_box() {
-            let mut tex: usize = 0;
+            let mut tex: usize;
 
             if !resources.get_glyph(element.text[i]).is_some() {
                 let mut pixels = vec![0.0 as f32; (bb.width() as usize * bb.height() as usize) * 4];
@@ -262,8 +285,8 @@ fn draw_text(
             let max_x = bb.max.x as f32;
             let max_y = bb.max.y as f32;
 
-            let mut center_x = ((min_x + max_x) / 2.0);
-            let mut center_y = ((min_y + max_y) / 2.0);
+            let mut center_x = (min_x + max_x) / 2.0;
+            let mut center_y = (min_y + max_y) / 2.0;
 
             center_x = center_x - width as f32 / 2.0;
             center_y = center_y + bb.height() as f32;
@@ -274,6 +297,7 @@ fn draw_text(
             center_y = center_y / element.font_resolution;
 
             let ui = UIElement {
+                style: element.style,
                 ui_type: UIType::Quad,
                 texture: tex,
                 center_x: element.center_x + center_x,
@@ -285,7 +309,7 @@ fn draw_text(
                 font_resolution: 0.0,
             };
 
-            draw_quad(context, &ui, resources, target, display);
+            draw_quad(context, &ui, resources, target, display, true);
         }
         i += 1;
     }
@@ -298,7 +322,7 @@ fn draw_button(
     target: &mut glium::Frame,
     display: &glium::Display,
 ) {
-    draw_quad(context, element, resources, target, display);
+    draw_quad(context, element, resources, target, display, false);
 }
 
 fn draw_quad(
@@ -307,6 +331,7 @@ fn draw_quad(
     resources: &mut ResourceContext,
     target: &mut glium::Frame,
     display: &glium::Display,
+    text_quad: bool,
 ) {
     let params = glium::DrawParameters {
         depth: glium::Depth {
@@ -366,6 +391,14 @@ fn draw_quad(
     let uniforms = uniform! {
         ortho_matrix: ortho_matrix,
         ui_texture: texture,
+        color: {
+            if text_quad {
+                element.style.font_color
+            }
+            else {
+                element.style.quad_color
+            }
+        }
     };
 
     target

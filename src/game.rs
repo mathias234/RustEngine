@@ -15,11 +15,10 @@ use ui_renderer::*;
 use vector::Vector3;
 
 pub struct GameState {
-    bricks: usize,
-    grass: usize,
-    text_size: f32,
+    default_ui: usize,
 }
 
+#[allow(dead_code)]
 impl GameState {
     pub fn start(
         display: &glium::Display,
@@ -37,6 +36,8 @@ impl GameState {
 
         let grass = res.alloc_tex(texture::load(&display, "res/grass.jpg".to_string()));
         let grassnrm = res.alloc_tex(texture::load(&display, "res/grass_nrm.jpg".to_string()));
+
+        let default_ui = res.alloc_tex(texture::load(&display, "res/default_ui.jpg".to_string()));
 
         let basic_shader = res.alloc_shader(shader::load(&display, "res/basic"));
 
@@ -92,9 +93,7 @@ impl GameState {
         }
 
         GameState {
-            bricks: bricks,
-            grass: grass,
-            text_size: 25.0,
+            default_ui: default_ui,
         }
     }
 
@@ -104,23 +103,27 @@ impl GameState {
 
     pub fn render_gui(&mut self, ui: &mut UIContext) {
         // copy the width and height variables of ui context
-        let width = ui.win_width;
-        let height = ui.win_height;
+        //let width = ui.win_width;
+        //let height = ui.win_height;
 
-        let button_center_x = width / 2.0;
-        let button_center_y = height / 2.0;
+        let button_center_x = 26.0;
+        let button_center_y = 26.0 / 2.0;
 
-        if ui.render_button(self.bricks, button_center_x, button_center_y, 50.0, 50.0) {
+        ui.set_quad_color([0.2, 0.2, 0.2, 0.5]);
+
+        if ui.render_button(
+            self.default_ui,
+            button_center_x,
+            button_center_y,
+            25.0,
+            15.0,
+        ) {
             println!("Click");
         }
 
-        ui.render_text(
-            "Hello World!....",
-            button_center_x,
-            button_center_y,
-            self.text_size,
-            50.0,
-        );
+        ui.set_font_color([1.0, 1.0, 1.0, 1.0]);
+
+        ui.render_text("Ok", button_center_x, button_center_y - 3.0, 15.0, 1.0);
     }
 
     pub fn process_input(&mut self, context: &mut RenderContext, event: &glutin::WindowEvent) {
@@ -131,7 +134,7 @@ impl GameState {
             _ => return,
         };
 
-        let pressed = input.state == glutin::ElementState::Pressed;
+        //let pressed = input.state == glutin::ElementState::Pressed;
 
         let key = match input.virtual_keycode {
             Some(key) => key,
@@ -139,8 +142,6 @@ impl GameState {
         };
 
         match key {
-            glutin::VirtualKeyCode::V => self.text_size += 0.5,
-            glutin::VirtualKeyCode::B => self.text_size -= 0.5,
             _ => (),
         };
     }
