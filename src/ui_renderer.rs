@@ -34,7 +34,7 @@ enum UIType {
 struct UIElement {
     ui_type: UIType,
     style: UIStyle,
-    texture: usize,
+    texture: Resource,
     center_x: f32,
     center_y: f32,
     width: f32,
@@ -42,13 +42,15 @@ struct UIElement {
 
     // text spesific
     text: Vec<char>,
-    font_resolution: f32,
 }
 
 #[derive(Copy, Clone)]
 pub struct UIStyle {
     quad_color: [f32; 4],
     font_color: [f32; 4],
+
+    font_size: f32,
+    font_resolution: f32,
 }
 
 #[allow(dead_code)]
@@ -58,6 +60,8 @@ impl UIContext {
             style: UIStyle {
                 quad_color: [1.0, 1.0, 1.0, 1.0],
                 font_color: [1.0, 1.0, 1.0, 1.0],
+                font_size: 14.0,
+                font_resolution: 2.0,
             },
             elements: Vec::new(),
             program: shader::load(&display, "res/ui_basic"),
@@ -80,19 +84,20 @@ impl UIContext {
         self.style.font_color = color;
     }
 
+    pub fn set_font_size(&mut self, size: f32) {
+        self.style.font_size = size;
+    }
+
+    pub fn set_font_res(&mut self, res: f32) {
+        self.style.font_resolution = res;
+    }
+
     pub fn screen_resize(&mut self, win_width: f32, win_height: f32) {
         self.win_width = win_width;
         self.win_height = win_height;
     }
 
-    pub fn render_text(
-        &mut self,
-        text: &str,
-        center_x: f32,
-        center_y: f32,
-        font_size: f32,
-        font_resolution: f32,
-    ) {
+    pub fn render_text(&mut self, text: &str, center_x: f32, center_y: f32) {
         let mut chars: Vec<char> = Vec::new();
 
         for ch in text.chars() {
@@ -106,16 +111,15 @@ impl UIContext {
             center_x: center_x,
             center_y: center_y,
             width: 0.0,
-            height: font_size,
+            height: 0.0,
             // text spesific
             text: chars,
-            font_resolution: font_resolution,
         })
     }
 
     pub fn render_quad(
         &mut self,
-        texture: usize,
+        texture: Resource,
         center_x: f32,
         center_y: f32,
         width: f32,
@@ -132,18 +136,24 @@ impl UIContext {
 
             // text spesific
             text: Vec::new(),
-            font_resolution: 0.0,
         })
     }
 
     pub fn render_button(
         &mut self,
-        texture: usize,
+        texture: Resource,
+        text: &str,
         center_x: f32,
         center_y: f32,
         width: f32,
         height: f32,
     ) -> bool {
+        let mut chars: Vec<char> = Vec::new();
+
+        for ch in text.chars() {
+            chars.push(ch);
+        }
+
         self.elements.push(UIElement {
             style: self.style,
             ui_type: UIType::Button,
@@ -154,8 +164,7 @@ impl UIContext {
             height: height,
 
             // text spesific
-            text: Vec::new(),
-            font_resolution: 0.0,
+            text: chars,
         });
 
         let mouse_x = self.mouse_x;
@@ -223,7 +232,7 @@ fn draw_text(
         panic!("Error turning font collection into a font: {}", e);
     });
 
-    let height: f32 = element.height * element.font_resolution;
+    let height: f32 = element.style.font_size * element.style.font_resolution;
     //let pixel_height = height.ceil() as usize;
 
     let scale = Scale {
@@ -253,7 +262,7 @@ fn draw_text(
 
     for g in glyphs {
         if let Some(bb) = g.pixel_bounding_box() {
-            let mut tex: usize;
+            let mut tex: Resource;
 
             if !resources.get_glyph(element.text[i]).is_some() {
                 let mut pixels = vec![0.0 as f32; (bb.width() as usize * bb.height() as usize) * 4];
@@ -291,10 +300,11 @@ fn draw_text(
             center_x = center_x - width as f32 / 2.0;
             center_y = center_y + bb.height() as f32;
 
-            center_y = center_y - height as f32;
+            // have to fudge the height by 1.1, not sure why yet
+            center_y = center_y - (height * 1.1) as f32;
 
-            center_x = center_x / element.font_resolution;
-            center_y = center_y / element.font_resolution;
+            center_x = center_x / element.style.font_resolution;
+            center_y = center_y / element.style.font_resolution;
 
             let ui = UIElement {
                 style: element.style,
@@ -302,11 +312,10 @@ fn draw_text(
                 texture: tex,
                 center_x: element.center_x + center_x,
                 center_y: element.center_y + center_y,
-                width: (bb.width() as f32 / 2.0) / element.font_resolution,
-                height: (bb.height() as f32 / 2.0) / element.font_resolution,
+                width: (bb.width() as f32 / 2.0) / element.style.font_resolution,
+                height: (bb.height() as f32 / 2.0) / element.style.font_resolution,
 
                 text: Vec::new(),
-                font_resolution: 0.0,
             };
 
             draw_quad(context, &ui, resources, target, display, true);
@@ -323,6 +332,7 @@ fn draw_button(
     display: &glium::Display,
 ) {
     draw_quad(context, element, resources, target, display, false);
+    draw_text(context, element, resources, target, display);
 }
 
 fn draw_quad(

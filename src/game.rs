@@ -8,14 +8,15 @@ use model::*;
 use physics_engine::{PhysicsContext, PhysicsShape};
 use quaternion::Quaternion;
 use renderer::*;
-use resource_manager::ResourceContext;
+use resource_manager::*;
 use shader;
 use texture;
 use ui_renderer::*;
 use vector::Vector3;
 
 pub struct GameState {
-    default_ui: usize,
+    default_ui: Resource,
+    menu_open: bool,
 }
 
 #[allow(dead_code)]
@@ -94,6 +95,7 @@ impl GameState {
 
         GameState {
             default_ui: default_ui,
+            menu_open: false,
         }
     }
 
@@ -103,27 +105,49 @@ impl GameState {
 
     pub fn render_gui(&mut self, ui: &mut UIContext) {
         // copy the width and height variables of ui context
-        //let width = ui.win_width;
-        //let height = ui.win_height;
+        let width = ui.win_width;
+        let height = ui.win_height;
 
-        let button_center_x = 26.0;
-        let button_center_y = 26.0 / 2.0;
-
-        ui.set_quad_color([0.2, 0.2, 0.2, 0.5]);
-
-        if ui.render_button(
-            self.default_ui,
-            button_center_x,
-            button_center_y,
-            25.0,
-            15.0,
-        ) {
-            println!("Click");
-        }
-
+        ui.set_font_size(17.0);
         ui.set_font_color([1.0, 1.0, 1.0, 1.0]);
 
-        ui.render_text("Ok", button_center_x, button_center_y - 3.0, 15.0, 1.0);
+        if self.menu_open {
+            ui.set_quad_color([0.1, 0.3, 0.5, 1.0]);
+
+            ui.render_quad(self.default_ui, 0.0, 0.0, width, height);
+
+            let close_button_x = width / 2.0;
+            let close_button_y = height / 2.0;
+
+            ui.set_quad_color([0.2, 0.2, 0.2, 0.8]);
+
+            if ui.render_button(
+                self.default_ui,
+                "Close",
+                close_button_x,
+                close_button_y,
+                40.0,
+                15.0,
+            ) {
+                self.menu_open = false;
+            }
+        } else {
+            let button_center_x = 40.0;
+            let button_center_y = height - 26.0 / 2.0;
+
+            ui.set_quad_color([0.2, 0.2, 0.2, 0.5]);
+
+            if ui.render_button(
+                self.default_ui,
+                "Menu",
+                button_center_x,
+                button_center_y,
+                40.0,
+                15.0,
+            ) {
+                self.menu_open = true;
+            }
+        }
     }
 
     pub fn process_input(&mut self, context: &mut RenderContext, event: &glutin::WindowEvent) {

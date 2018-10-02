@@ -1,11 +1,11 @@
 extern crate glium;
 extern crate tobj;
 use camera::*;
-use resource_manager::ResourceContext;
+use resource_manager::*;
 
 pub struct RenderContext {
     pub clear_color: [f32; 3],
-    pub gameobjects: Vec<usize>,
+    pub gameobjects: Vec<Resource>,
     pub camera: CameraState,
 }
 
@@ -19,7 +19,7 @@ impl RenderContext {
         }
     }
 
-    pub fn get_gameobject(&mut self, resources: &mut ResourceContext, name: String) -> usize {
+    pub fn get_gameobject(&mut self, resources: &mut ResourceContext, name: String) -> Resource {
         for i in 0..self.gameobjects.len() {
             if resources.get_gameobject_ref(self.gameobjects[i]).name == name {
                 return self.gameobjects[i];

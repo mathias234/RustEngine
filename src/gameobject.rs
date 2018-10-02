@@ -2,21 +2,21 @@ extern crate glium;
 extern crate ncollide3d;
 extern crate nphysics3d;
 
+use material::*;
 use math_helper;
 use na::Vector3 as PhysicsVec3;
 use ncollide3d::shape::{Ball, Cuboid, ShapeHandle};
 use physics_engine;
 use physics_engine::PhysicsContext;
 use quaternion::Quaternion;
-use resource_manager::ResourceContext;
+use resource_manager::*;
 use vector::Vector3;
-use material::*;
 
 pub struct GameObject {
     pub name: String,
     pub position: Vector3,
     pub rotation: Quaternion,
-    pub model: usize,
+    pub model: Resource,
     pub bounding_box: [f32; 3],
     pub material: Material,
 
@@ -33,7 +33,7 @@ impl GameObject {
         name: String,
         position: Vector3,
         rotation: Quaternion,
-        model: usize,
+        model: Resource,
         material: Material,
     ) -> GameObject {
         let bounding_box = resources.get_model_ref(model).bounding_box;

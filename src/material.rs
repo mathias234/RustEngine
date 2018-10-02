@@ -1,17 +1,19 @@
+use resource_manager::*;
+
 #[derive(Copy, Clone)]
 pub struct Material {
-	pub shader_prog: usize,
-	pub diffuse_tex: usize,
-	pub normal_tex: usize,
+	pub shader_prog: Resource,
+	pub diffuse_tex: Resource,
+	pub normal_tex: Resource,
 	pub color: [f32; 3],
 	pub tiling: [f32; 2],
 }
 
 impl Material {
 	pub fn new(
-		shader_prog: usize,
-		diffuse_tex: usize,
-		normal_tex: usize,
+		shader_prog: Resource,
+		diffuse_tex: Resource,
+		normal_tex: Resource,
 		color: [f32; 3],
 		tiling: [f32; 2],
 	) -> Material {
