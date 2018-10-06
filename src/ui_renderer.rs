@@ -198,9 +198,9 @@ impl UIContext {
         for i in 0..self.elements.len() {
             let element = &self.elements[i];
             match element.ui_type {
-                UIType::Quad => draw_quad(self, element, resources, target, display, false),
-                UIType::Button => draw_button(self, element, resources, target, display),
-                UIType::Text => draw_text(self, element, resources, target, display),
+                UIType::Quad => draw_quad(self, &element, resources, target, display, false),
+                UIType::Button => draw_button(self, &element, resources, target, display),
+                UIType::Text => draw_text(self, &element, resources, target, display),
             }
         }
 
@@ -280,8 +280,9 @@ fn draw_text(
                     (bb.width() as u32, bb.height() as u32),
                 );
 
-                tex = resources
-                    .alloc_tex(glium::texture::SrgbTexture2d::new(display, raw_image).unwrap());
+                let tex_srgb = glium::texture::SrgbTexture2d::new(display, raw_image);
+
+                tex = resources.alloc_tex(tex_srgb.unwrap());
 
                 resources.store_glyph(element.text[i], tex);
             } else {
@@ -396,7 +397,11 @@ fn draw_quad(
         1.0,
     );
 
-    let texture = resources.get_tex_ref(element.texture);
+    let mut texture = resources.get_tex_ref(element.texture).sampled();
+
+    if text_quad {
+        texture = texture.wrap_function(glium::uniforms::SamplerWrapFunction::Clamp);
+    }
 
     let uniforms = uniform! {
         ortho_matrix: ortho_matrix,
