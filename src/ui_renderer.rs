@@ -64,7 +64,11 @@ impl UIContext {
                 font_resolution: 2.0,
             },
             elements: Vec::new(),
-            program: shader::load(&display, "res/ui_basic"),
+            program: shader::load(
+                &display,
+                include_bytes!("../res/ui_basic.vs"),
+                include_bytes!("../res/ui_basic.fs"),
+            ),
             win_width: width,
             win_height: height,
             left_mouse_down: false,

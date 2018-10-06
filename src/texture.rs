@@ -1,13 +1,9 @@
 extern crate glium;
 extern crate image;
 use colored::*;
-use stopwatch::Stopwatch;
 
-pub fn load(display: &glium::Display, filename: String) -> glium::texture::SrgbTexture2d {
-	println!("Loading texture: {}", filename);
-	let sw = Stopwatch::start_new();
-
-	let image = image::open(filename);
+pub fn load(display: &glium::Display, buffer: &[u8]) -> glium::texture::SrgbTexture2d {
+	let image = image::load_from_memory(buffer);
 
 	if !image.is_ok() {
 		println!("{}", "Failed to load texture".red());
@@ -19,13 +15,6 @@ pub fn load(display: &glium::Display, filename: String) -> glium::texture::SrgbT
 
 	let image =
 		glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
-
-	println!(
-		"{}{}{}",
-		"Image file loaded, took ".green(),
-		sw.elapsed_ms().to_string().green(),
-		"ms \n".green()
-	);
 
 	glium::texture::SrgbTexture2d::new(display, image).unwrap()
 }

@@ -2,8 +2,7 @@ extern crate glium;
 extern crate tobj;
 
 use colored::*;
-use std::path::Path;
-use stopwatch::Stopwatch;
+use std::io::BufReader;
 
 #[derive(Copy, PartialEq, Clone, Debug)]
 pub struct ModelVertex {
@@ -24,11 +23,13 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn load(display: &glium::Display, filename: String) -> Model {
-        println!("Loading model: {}", filename);
-        let sw = Stopwatch::start_new();
+    pub fn load(display: &glium::Display, obj_buffer: &[u8], mtl_buffer: &[u8]) -> Model {
+        let mut obj_buf = BufReader::new(obj_buffer);
 
-        let tobj_model = tobj::load_obj(&Path::new(&filename));
+        let tobj_model = tobj::load_obj_buf(&mut obj_buf, |_| {
+            tobj::load_mtl_buf(&mut BufReader::new(mtl_buffer))
+        });
+
         if !tobj_model.is_ok() {
             println!("{}", "Failed to load model".red());
         }
@@ -84,13 +85,6 @@ impl Model {
         ).unwrap();
 
         let bounding_box = Model::calculate_bounding_box(&mut vertices);
-
-        println!(
-            "{}{}{}",
-            "Model file loaded, took ".green(),
-            sw.elapsed_ms().to_string().green(),
-            "ms \n".green()
-        );
 
         Model {
             vertices: vertices,

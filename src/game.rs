@@ -29,18 +29,42 @@ impl GameState {
     ) -> GameState {
         context.clear_color = [0.0, 0.3, 0.7];
 
-        let test_model = res.alloc_model(Model::load(&display, "res/test.obj".to_string()));
-        let plane_model = res.alloc_model(Model::load(&display, "res/plane.obj".to_string()));
+        let test_model = res.alloc_model(Model::load(
+            &display,
+            include_bytes!("../res/test.obj"),
+            include_bytes!("../res/test.mtl"),
+        ));
+        let plane_model = res.alloc_model(Model::load(
+            &display,
+            include_bytes!("../res/plane.obj"),
+            include_bytes!("../res/plane.mtl"),
+        ));
 
-        let bricks = res.alloc_tex(texture::load(&display, "res/nicebrick.jpg".to_string()));
-        let bricksnrm = res.alloc_tex(texture::load(&display, "res/nicebrick_nrm.jpg".to_string()));
+        let bricks = res.alloc_tex(texture::load(
+            &display,
+            include_bytes!("../res/nicebrick.jpg"),
+        ));
+        let bricksnrm = res.alloc_tex(texture::load(
+            &display,
+            include_bytes!("../res/nicebrick_nrm.jpg"),
+        ));
 
-        let grass = res.alloc_tex(texture::load(&display, "res/grass.jpg".to_string()));
-        let grassnrm = res.alloc_tex(texture::load(&display, "res/grass_nrm.jpg".to_string()));
+        let grass = res.alloc_tex(texture::load(&display, include_bytes!("../res/grass.jpg")));
+        let grassnrm = res.alloc_tex(texture::load(
+            &display,
+            include_bytes!("../res/grass_nrm.jpg"),
+        ));
 
-        let default_ui = res.alloc_tex(texture::load(&display, "res/default_ui.jpg".to_string()));
+        let default_ui = res.alloc_tex(texture::load(
+            &display,
+            include_bytes!("../res/default_ui.jpg"),
+        ));
 
-        let basic_shader = res.alloc_shader(shader::load(&display, "res/basic"));
+        let basic_shader = res.alloc_shader(shader::load(
+            &display,
+            include_bytes!("../res/basic.vs"),
+            include_bytes!("../res/basic.fs"),
+        ));
 
         let grass_material =
             Material::new(basic_shader, grass, grassnrm, [1.0, 1.0, 1.0], [3.0, 3.0]);
