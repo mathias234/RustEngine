@@ -5,13 +5,20 @@ use std::collections::HashMap;
 
 pub type Resource = usize;
 
+#[derive(PartialEq, Eq, Hash)]
+struct GlyphIdx {
+    font_char: char,
+    font_res: i32,
+    font_size: i32,
+}
+
 pub struct ResourceContext {
     texture_resources: Vec<glium::texture::SrgbTexture2d>,
     shader_resources: Vec<glium::Program>,
     model_resources: Vec<Model>,
     gameobject_resources: Vec<GameObject>,
 
-    glyph_storage: HashMap<char, Resource>,
+    glyph_storage: HashMap<GlyphIdx, Resource>,
 }
 
 #[allow(dead_code)]
@@ -26,13 +33,36 @@ impl ResourceContext {
         }
     }
 
-    pub fn store_glyph(&mut self, character: char, texture: Resource) {
-        self.glyph_storage.insert(character, texture);
+    pub fn store_glyph(
+        &mut self,
+        character: char,
+        font_size: i32,
+        font_res: i32,
+        texture: Resource,
+    ) {
+        let glyph = GlyphIdx {
+            font_char: character,
+            font_res: font_res,
+            font_size: font_size,
+        };
+
+        self.glyph_storage.insert(glyph, texture);
     }
 
-    pub fn get_glyph(&mut self, character: char) -> Option<Resource> {
-        if self.glyph_storage.contains_key(&character) {
-            let glyph = self.glyph_storage.get(&character).unwrap();
+    pub fn get_glyph(
+        &mut self,
+        character: char,
+        font_size: i32,
+        font_res: i32,
+    ) -> Option<Resource> {
+        let glyph = GlyphIdx {
+            font_char: character,
+            font_res: font_res,
+            font_size: font_size,
+        };
+
+        if self.glyph_storage.contains_key(&glyph) {
+            let glyph = self.glyph_storage.get(&glyph).unwrap();
             return Some(*glyph);
         }
 

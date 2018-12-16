@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate glium;
+extern crate bincode;
 extern crate colored;
 extern crate nalgebra as na;
 extern crate ncollide3d;
@@ -8,6 +9,7 @@ extern crate rusttype;
 extern crate stopwatch;
 extern crate tobj;
 
+mod assets;
 mod camera;
 mod game;
 mod gameobject;
@@ -24,8 +26,35 @@ mod ui_renderer;
 mod vector;
 
 fn main() {
+    args_parser();
+}
+
+fn args_parser() {
+    let mut should_start_game = true;
+    let mut compile_assets = false;
+
+    let args = std::env::args();
+    for argument in args {
+        println!("{}", argument);
+        if argument == "-compile_assets" {
+            should_start_game = false;
+            compile_assets = true;
+        }
+    }
+
+    if should_start_game {
+        start_game();
+    }
+    if compile_assets {
+        assets::compile_assets();
+    }
+
+    loop {}
+}
+
+fn start_game() {
     // skip a few lines in the console
-    println!("\n\n\n");
+    println!("Starting game");
 
     let mut win_width = 1024;
     let mut win_height = 768;

@@ -1,6 +1,7 @@
 extern crate glium;
 extern crate rand;
 
+use assets;
 use gameobject::*;
 use glium::glutin;
 use material::*;
@@ -31,39 +32,42 @@ impl GameState {
 
         let test_model = res.alloc_model(Model::load(
             &display,
-            include_bytes!("../res/test.obj"),
-            include_bytes!("../res/test.mtl"),
+            &assets::get_asset("./res/test.obj"),
+            &assets::get_asset("./res/test.mtl"),
         ));
         let plane_model = res.alloc_model(Model::load(
             &display,
-            include_bytes!("../res/plane.obj"),
-            include_bytes!("../res/plane.mtl"),
+            &assets::get_asset("./res/plane.obj"),
+            &assets::get_asset("./res/plane.mtl"),
         ));
 
         let bricks = res.alloc_tex(texture::load(
             &display,
-            include_bytes!("../res/nicebrick.jpg"),
+            &assets::get_asset("./res/nicebrick.jpg"),
         ));
         let bricksnrm = res.alloc_tex(texture::load(
             &display,
-            include_bytes!("../res/nicebrick_nrm.jpg"),
+            &assets::get_asset("./res/nicebrick_nrm.jpg"),
         ));
 
-        let grass = res.alloc_tex(texture::load(&display, include_bytes!("../res/grass.jpg")));
+        let grass = res.alloc_tex(texture::load(
+            &display,
+            &assets::get_asset("./res/grass.jpg"),
+        ));
         let grassnrm = res.alloc_tex(texture::load(
             &display,
-            include_bytes!("../res/grass_nrm.jpg"),
+            &assets::get_asset("./res/grass_nrm.jpg"),
         ));
 
         let default_ui = res.alloc_tex(texture::load(
             &display,
-            include_bytes!("../res/default_ui.jpg"),
+            &assets::get_asset("./res/default_ui.jpg"),
         ));
 
         let basic_shader = res.alloc_shader(shader::load(
             &display,
-            include_bytes!("../res/basic.vs"),
-            include_bytes!("../res/basic.fs"),
+            &assets::get_asset("./res/basic.vs"),
+            &assets::get_asset("./res/basic.fs"),
         ));
 
         let grass_material =
@@ -81,7 +85,8 @@ impl GameState {
             Quaternion::new(0.0, 0.0, 0.0, 1.0),
             plane_model,
             ground_material,
-        ).add_collider(physics, PhysicsShape::BoxShape);
+        )
+        .add_collider(physics, PhysicsShape::BoxShape);
         let plane = res.alloc_gameobject(plane);
         context.gameobjects.push(plane);
 
@@ -98,7 +103,8 @@ impl GameState {
                             Quaternion::new(0.0, 0.0, 0.0, 1.0),
                             test_model,
                             grass_material,
-                        ).add_rigidbody(physics, PhysicsShape::SphereShape);
+                        )
+                        .add_rigidbody(physics, PhysicsShape::SphereShape);
                         let sphere = res.alloc_gameobject(sphere);
                         context.gameobjects.push(sphere);
                     } else {
@@ -109,7 +115,8 @@ impl GameState {
                             Quaternion::new(0.0, 0.0, 0.0, 1.0),
                             test_model,
                             brick_material,
-                        ).add_rigidbody(physics, PhysicsShape::SphereShape);
+                        )
+                        .add_rigidbody(physics, PhysicsShape::SphereShape);
                         let sphere = res.alloc_gameobject(sphere);
                         context.gameobjects.push(sphere);
                     }
@@ -132,19 +139,19 @@ impl GameState {
         let width = ui.win_width;
         let height = ui.win_height;
 
-        ui.set_font_size(17.0);
+        ui.set_font_size(17);
         ui.set_font_color([1.0, 1.0, 1.0, 1.0]);
 
         if self.menu_open {
+            // Render a solid background color
             ui.set_quad_color([0.1, 0.3, 0.5, 1.0]);
-
             ui.render_quad(self.default_ui, 0.0, 0.0, width, height);
 
             let close_button_x = width / 2.0;
             let close_button_y = height / 2.0;
 
             ui.set_quad_color([0.2, 0.2, 0.2, 0.8]);
-
+            // Render a button
             if ui.render_button(
                 self.default_ui,
                 "Close",
@@ -155,6 +162,11 @@ impl GameState {
             ) {
                 self.menu_open = false;
             }
+
+            ui.set_font_size(45);
+
+            // Render Title text
+            ui.render_text("Title Screen!", width / 2.0, height - 200.0);
         } else {
             let button_center_x = 40.0;
             let button_center_y = height - 26.0 / 2.0;

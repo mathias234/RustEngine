@@ -49,8 +49,8 @@ pub struct UIStyle {
     quad_color: [f32; 4],
     font_color: [f32; 4],
 
-    font_size: f32,
-    font_resolution: f32,
+    font_size: i32,
+    font_resolution: i32,
 }
 
 #[allow(dead_code)]
@@ -60,8 +60,8 @@ impl UIContext {
             style: UIStyle {
                 quad_color: [1.0, 1.0, 1.0, 1.0],
                 font_color: [1.0, 1.0, 1.0, 1.0],
-                font_size: 14.0,
-                font_resolution: 2.0,
+                font_size: 14,
+                font_resolution: 2,
             },
             elements: Vec::new(),
             program: shader::load(
@@ -88,11 +88,11 @@ impl UIContext {
         self.style.font_color = color;
     }
 
-    pub fn set_font_size(&mut self, size: f32) {
+    pub fn set_font_size(&mut self, size: i32) {
         self.style.font_size = size;
     }
 
-    pub fn set_font_res(&mut self, res: f32) {
+    pub fn set_font_res(&mut self, res: i32) {
         self.style.font_resolution = res;
     }
 
@@ -236,12 +236,12 @@ fn draw_text(
         panic!("Error turning font collection into a font: {}", e);
     });
 
-    let height: f32 = element.style.font_size * element.style.font_resolution;
+    let height: i32 = element.style.font_size * element.style.font_resolution;
     //let pixel_height = height.ceil() as usize;
 
     let scale = Scale {
-        x: height * 2.0,
-        y: height,
+        x: height as f32 * 2.0,
+        y: height as f32,
     };
 
     let v_metrics = font.v_metrics(scale);
@@ -268,7 +268,14 @@ fn draw_text(
         if let Some(bb) = g.pixel_bounding_box() {
             let mut tex: Resource;
 
-            if !resources.get_glyph(element.text[i]).is_some() {
+            if !resources
+                .get_glyph(
+                    element.text[i],
+                    element.style.font_size,
+                    element.style.font_resolution,
+                )
+                .is_some()
+            {
                 let mut pixels = vec![0.0 as f32; (bb.width() as usize * bb.height() as usize) * 4];
 
                 g.draw(|x, y, v| {
@@ -288,9 +295,20 @@ fn draw_text(
 
                 tex = resources.alloc_tex(tex_srgb.unwrap());
 
-                resources.store_glyph(element.text[i], tex);
+                resources.store_glyph(
+                    element.text[i],
+                    element.style.font_size,
+                    element.style.font_resolution,
+                    tex,
+                );
             } else {
-                tex = resources.get_glyph(element.text[i]).unwrap();
+                tex = resources
+                    .get_glyph(
+                        element.text[i],
+                        element.style.font_size,
+                        element.style.font_resolution,
+                    )
+                    .unwrap();
             }
 
             let min_x = bb.min.x as f32;
@@ -306,10 +324,10 @@ fn draw_text(
             center_y = center_y + bb.height() as f32;
 
             // have to fudge the height by 1.1, not sure why yet
-            center_y = center_y - (height * 1.1) as f32;
+            center_y = center_y - (height as f32 * 1.1) as f32;
 
-            center_x = center_x / element.style.font_resolution;
-            center_y = center_y / element.style.font_resolution;
+            center_x = center_x / element.style.font_resolution as f32;
+            center_y = center_y / element.style.font_resolution as f32;
 
             let ui = UIElement {
                 style: element.style,
@@ -317,8 +335,8 @@ fn draw_text(
                 texture: tex,
                 center_x: element.center_x + center_x,
                 center_y: element.center_y + center_y,
-                width: (bb.width() as f32 / 2.0) / element.style.font_resolution,
-                height: (bb.height() as f32 / 2.0) / element.style.font_resolution,
+                width: (bb.width() as f32 / 2.0) / element.style.font_resolution as f32,
+                height: (bb.height() as f32 / 2.0) / element.style.font_resolution as f32,
 
                 text: Vec::new(),
             };
@@ -390,7 +408,8 @@ fn draw_quad(
         display,
         glium::index::PrimitiveType::TrianglesList,
         &quad_indices,
-    ).unwrap();
+    )
+    .unwrap();
 
     let ortho_matrix = math_helper::ortho_matrix(
         0.0,
@@ -427,5 +446,6 @@ fn draw_quad(
             &context.program,
             &uniforms,
             &params,
-        ).unwrap();
+        )
+        .unwrap();
 }
