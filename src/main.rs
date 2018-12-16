@@ -48,8 +48,6 @@ fn args_parser() {
     if compile_assets {
         assets::compile_assets();
     }
-
-    loop {}
 }
 
 fn start_game() {

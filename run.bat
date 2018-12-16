@@ -1,3 +1,0 @@
-cargo run
-
-pause

@@ -97,11 +97,6 @@ pub fn compile_assets() {
 
         curr_data_loc = curr_data_loc + file.metadata.len() as u64;
     }
-
-    // test
-    get_asset("./res/nicebrick_nrm.jpg");
-
-    loop {}
 }
 
 pub fn get_asset(asset_path: &str) -> Vec<u8> {
