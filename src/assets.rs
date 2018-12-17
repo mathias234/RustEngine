@@ -8,7 +8,7 @@
 *       Cache the idx file so it only has to be read once
 */
 
-use bincode::{deserialize, deserialize_from, serialize};
+use binary_rw::{BinaryReader, BinaryWriter, OpenType};
 use std::fs;
 use std::fs::Metadata;
 use std::io::prelude::*;
@@ -40,6 +40,8 @@ fn recursive_search(path: &str, data: &mut Vec<MetaFile>) {
 }
 
 pub fn compile_assets() {
+    println!("building assets");
+
     if path_exists("./data.idx") {
         println!("deleting data.idx");
         fs::remove_file("./data.idx").unwrap();
@@ -50,15 +52,17 @@ pub fn compile_assets() {
         fs::remove_file("./data.dat").unwrap();
     }
 
+    println!("Setting up writers");
+
     let mut curr_data_loc: u64 = 0;
-    let mut idx_buffer = fs::File::create("data.idx").unwrap();
-    let mut dat_buffer = fs::File::create("data.dat").unwrap();
+    let mut idx_writer = BinaryWriter::new("data.idx", OpenType::OpenAndCreate);
+    let mut dat_writer = BinaryWriter::new("data.dat", OpenType::OpenAndCreate);
 
     let mut files: Vec<MetaFile> = Vec::new();
 
     recursive_search("./res", &mut files);
 
-    write_u64(files.len() as u64, &mut idx_buffer);
+    idx_writer.write_u64(files.len() as u64);
 
     for file in files {
         println!(
@@ -67,32 +71,20 @@ pub fn compile_assets() {
             file.metadata.len()
         );
 
-        let mut buffer: Vec<u8> = Vec::with_capacity(file.metadata.len() as usize);
-        // initialize the vec with data
-        for _i in 0..file.metadata.len() {
-            buffer.push(0);
-        }
+        let mut file_reader = BinaryReader::new(&file.file, OpenType::Open);
 
-        let mut file_dat = fs::File::open(&file.file);
+        let mut buffer = file_reader.read_bytes(file.metadata.len());
 
-        if !file_dat.is_ok() {
-            println!("Failed to open file");
-        }
-
-        let mut file_dat = file_dat.unwrap();
-
-        file_dat.read(&mut buffer).unwrap();
-
-        dat_buffer.write(&buffer).unwrap();
+        dat_writer.write_bytes(buffer);
 
         // Write idx entry
         {
             // write file size
-            write_u64(file.metadata.len(), &mut idx_buffer);
+            idx_writer.write_u64(file.metadata.len());
             // write file offset
-            write_u64(curr_data_loc, &mut idx_buffer);
+            idx_writer.write_u64(curr_data_loc);
             // write file name
-            write_string(file.file, &mut idx_buffer);
+            idx_writer.write_string(file.file);
         }
 
         curr_data_loc = curr_data_loc + file.metadata.len() as u64;
@@ -100,16 +92,10 @@ pub fn compile_assets() {
 }
 
 pub fn get_asset(asset_path: &str) -> Vec<u8> {
-    println!("Loading asset, {}", asset_path);
-
     // open idx and find file
-    let file_idx = fs::File::open("data.idx");
-    if !file_idx.is_ok() {
-        println!("Failed to open idx file");
-    }
-    let mut file_idx = file_idx.unwrap();
+    let mut reader = BinaryReader::new("data.idx", OpenType::Open);
 
-    let files = read_u64(&mut file_idx);
+    let files = reader.read_u64();
 
     let mut file_size: u64 = 0;
     let mut file_offset: u64 = 0;
@@ -118,9 +104,9 @@ pub fn get_asset(asset_path: &str) -> Vec<u8> {
     let mut file_found: bool = false;
 
     for _i in 0..files {
-        file_size = read_u64(&mut file_idx);
-        file_offset = read_u64(&mut file_idx);
-        file_name = read_string(&mut file_idx);
+        file_size = reader.read_u64();
+        file_offset = reader.read_u64();
+        file_name = reader.read_string();
 
         if Path::new(&file_name) == Path::new(asset_path) {
             file_found = true;
@@ -132,11 +118,6 @@ pub fn get_asset(asset_path: &str) -> Vec<u8> {
         println!("Failed to find file, {}", asset_path);
     }
 
-    println!(
-        "File: {}, Size: {}, Offset: {}",
-        file_name, file_size, file_offset
-    );
-
     let file_dat = fs::File::open("data.dat");
     if !file_dat.is_ok() {
         println!("Failed to open dat file");
@@ -145,42 +126,14 @@ pub fn get_asset(asset_path: &str) -> Vec<u8> {
 
     file_dat.seek(SeekFrom::Start(file_offset)).unwrap();
 
-    let mut buffer: Vec<u8> = Vec::with_capacity(file_size as usize);
-    // initialize the vec with data
-    for _i in 0..file_size {
-        buffer.push(0);
-    }
+    let mut buffer: Vec<u8> = vec![0; file_size as usize];
 
     file_dat.read(&mut buffer).unwrap();
 
+    println!(
+        "Loaded asset: {}, Size: {}, Offset: {}",
+        file_name, file_size, file_offset
+    );
+
     buffer
-}
-
-fn write_string(value: String, writer: &mut fs::File) {
-    let data: Vec<u8> = serialize(&value).unwrap();
-    writer.write(&data).unwrap();
-}
-
-fn write_u64(value: u64, writer: &mut fs::File) {
-    let data: Vec<u8> = serialize(&value).unwrap();
-    writer.write(&data).unwrap();
-}
-
-fn read_u64(reader: &mut fs::File) -> u64 {
-    let mut buffer: Vec<u8> = Vec::new();
-
-    // 4 bytes
-    for _i in 0..8 {
-        buffer.push(0);
-    }
-
-    reader.read(&mut buffer).unwrap();
-
-    let value: u64 = deserialize(&buffer).unwrap();
-
-    value
-}
-
-fn read_string(reader: &mut fs::File) -> String {
-    deserialize_from(reader).unwrap()
 }

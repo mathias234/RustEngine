@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate glium;
-extern crate bincode;
+extern crate binary_rw;
 extern crate colored;
 extern crate nalgebra as na;
 extern crate ncollide3d;
@@ -34,8 +34,9 @@ fn args_parser() {
     let mut compile_assets = false;
 
     let args = std::env::args();
+    println!("Args: ");
     for argument in args {
-        println!("{}", argument);
+        println!("  {}", argument);
         if argument == "-compile_assets" {
             should_start_game = false;
             compile_assets = true;
@@ -51,7 +52,6 @@ fn args_parser() {
 }
 
 fn start_game() {
-    // skip a few lines in the console
     println!("Starting game");
 
     let mut win_width = 1024;
