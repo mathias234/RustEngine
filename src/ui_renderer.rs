@@ -244,8 +244,6 @@ fn draw_text(
     let v_metrics = font.v_metrics(scale);
     let offset = point(0.0, v_metrics.ascent);
 
-    println!("Offset: {}", offset.y);
-
     let mut text: String = "".to_owned();
 
     for i in 0..element.text.len() {

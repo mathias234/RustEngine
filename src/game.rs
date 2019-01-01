@@ -139,7 +139,7 @@ impl GameState {
         let width = ui.win_width;
         let height = ui.win_height;
 
-        ui.set_font_size(17);
+        ui.set_font_size(25);
         ui.set_font_color([1.0, 1.0, 1.0, 1.0]);
 
         if self.menu_open {

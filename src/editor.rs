@@ -9,7 +9,7 @@ pub fn render_editor(ui: &mut UIContext, game_state: &mut GameState) {
     let width = ui.win_width;
     let height = ui.win_height;
 
-    ui.set_font_size(40);
+    ui.set_font_size(20);
 
     ui.render_button(
         game_state.default_ui,
