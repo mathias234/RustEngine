@@ -61,7 +61,7 @@ impl UIContext {
                 quad_color: [1.0, 1.0, 1.0, 1.0],
                 font_color: [1.0, 1.0, 1.0, 1.0],
                 font_size: 14,
-                font_resolution: 2,
+                font_resolution: 1,
             },
             elements: Vec::new(),
             program: shader::load(
@@ -239,13 +239,12 @@ fn draw_text(
     let height: i32 = element.style.font_size * element.style.font_resolution;
     //let pixel_height = height.ceil() as usize;
 
-    let scale = Scale {
-        x: height as f32 * 2.0,
-        y: height as f32,
-    };
+    let scale = Scale::uniform(height as f32);
 
     let v_metrics = font.v_metrics(scale);
     let offset = point(0.0, v_metrics.ascent);
+
+    println!("Offset: {}", offset.y);
 
     let mut text: String = "".to_owned();
 
@@ -312,19 +311,19 @@ fn draw_text(
             }
 
             let min_x = bb.min.x as f32;
-            let min_y = bb.min.y as f32;
+            let min_y = -bb.min.y as f32;
 
             let max_x = bb.max.x as f32;
-            let max_y = bb.max.y as f32;
+            let max_y = -bb.max.y as f32;
 
-            let mut center_x = (min_x + max_x) / 2.0;
-            let mut center_y = (min_y + max_y) / 2.0;
+            let mut center_x = lerp(min_x, max_x, 0.5);
+            let mut center_y = lerp(min_y, max_y, 0.5);
 
+            // move text left so its centered in the middle not to the left side
             center_x = center_x - width as f32 / 2.0;
-            center_y = center_y + bb.height() as f32;
 
-            // have to fudge the height by 1.1, not sure why yet
-            center_y = center_y - (height as f32 * 1.1) as f32;
+            // move text down so its centered in the middle of the text not the bottom
+            center_y = center_y + (height as f32 / 2.0) as f32;
 
             center_x = center_x / element.style.font_resolution as f32;
             center_y = center_y / element.style.font_resolution as f32;
@@ -345,6 +344,10 @@ fn draw_text(
         }
         i += 1;
     }
+}
+
+fn lerp(a: f32, b: f32, amt: f32) -> f32 {
+    return a + amt * (b - a);
 }
 
 fn draw_button(

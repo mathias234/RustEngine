@@ -16,8 +16,8 @@ use ui_renderer::*;
 use vector::Vector3;
 
 pub struct GameState {
-    default_ui: Resource,
-    menu_open: bool,
+    pub default_ui: Resource,
+    pub menu_open: bool,
 }
 
 #[allow(dead_code)]

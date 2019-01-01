@@ -11,6 +11,7 @@ extern crate tobj;
 
 mod assets;
 mod camera;
+mod editor;
 mod game;
 mod gameobject;
 mod material;
@@ -102,6 +103,8 @@ fn start_game() {
 
         renderer::render(&mut render_context, &mut resource_context, &mut target);
         game_state.render_gui(&mut ui_context);
+
+        editor::render_editor(&mut ui_context, &mut game_state);
 
         ui_context.draw_frame(&mut resource_context, &mut target, &display);
 
