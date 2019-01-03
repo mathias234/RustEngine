@@ -14,6 +14,7 @@ mod camera;
 mod editor;
 mod game;
 mod gameobject;
+mod input;
 mod material;
 mod math_helper;
 mod model;
@@ -32,7 +33,7 @@ fn main() {
 
 fn args_parser() {
     let mut should_start_game = true;
-    let mut compile_assets = false;
+    let mut compile_assets = true;
 
     let args = std::env::args();
     println!("Args: ");
@@ -43,12 +44,12 @@ fn args_parser() {
             compile_assets = true;
         }
     }
+    if compile_assets {
+        assets::compile_assets();
+    }
 
     if should_start_game {
         start_game();
-    }
-    if compile_assets {
-        assets::compile_assets();
     }
 }
 
@@ -84,10 +85,13 @@ fn start_game() {
         &mut physics_context,
     );
 
+    let mut input = input::Input::new();
+
     let mut sw = Stopwatch::start_new();
     let mut delta_time: f64 = 0.0;
 
-    let mut editor_context = editor::Editor::new();
+    let mut editor_context =
+        editor::Editor::new(&display, &mut render_context, &mut resource_context);
 
     let mut cursor_position: Option<(i32, i32)> = None;
 
@@ -96,6 +100,12 @@ fn start_game() {
     while !closed {
         physics_context.step();
         game_state.update(&mut render_context, delta_time as f32);
+        editor_context.update(
+            &mut game_state,
+            &mut render_context,
+            &mut resource_context,
+            &mut input,
+        );
 
         for i in 0..render_context.gameobjects.len() {
             resource_context
@@ -114,28 +124,30 @@ fn start_game() {
         );
         game_state.render_gui(&mut ui_context);
 
-        editor_context.render_editor(
-            &mut ui_context,
-            &mut game_state,
-            &mut render_context,
-            &mut resource_context,
-        );
+        editor_context.render_editor(&mut ui_context, &mut game_state);
 
         ui_context.draw_frame(&mut resource_context, &mut target, &display);
 
         target.finish().unwrap();
 
+        input.start_event_proc();
+
         events_loop.poll_events(|ev| match ev {
             glutin::Event::WindowEvent { event, .. } => match event {
                 glutin::WindowEvent::CloseRequested => closed = true,
                 glutin::WindowEvent::Resized(logical_size) => {
-                    render_context.resized(logical_size.width as i32, logical_size.height as i32);
+                    render_context.resized(
+                        &display,
+                        logical_size.width as i32,
+                        logical_size.height as i32,
+                    );
                     win_width = logical_size.width as i32;
                     win_height = logical_size.height as i32;
                     ui_context.screen_resize(win_width as f32, win_height as f32);
                 }
                 ev => {
                     game_state.process_input(&mut render_context, &ev);
+                    input.process_events(&ev);
 
                     let position = match ev {
                         glutin::WindowEvent::CursorMoved { position, .. } => Some(position),

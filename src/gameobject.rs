@@ -19,6 +19,7 @@ pub struct GameObject {
     pub model: Resource,
     pub bounding_box: [f32; 3],
     pub material: Material,
+    pub overlay: bool,
 
     // Physics variables
     pub physics_enabled: bool,
@@ -48,11 +49,12 @@ impl GameObject {
             material: material,
             physics_enabled: false,
             bounding_box: bounding_box,
+            overlay: false,
         }
     }
 
     pub fn update(&mut self, physics: &mut PhysicsContext) {
-        if self.physics_enabled {
+        if self.physics_enabled && self.rigid_body_handle.is_some() {
             let handle = self.rigid_body_handle.unwrap();
 
             self.position = physics.get_rigid_body_pos(&handle);

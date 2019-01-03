@@ -87,6 +87,7 @@ impl GameState {
             ground_material,
         )
         .add_collider(physics, PhysicsShape::BoxShape);
+
         let plane = res.alloc_gameobject(plane);
         context.gameobjects.push(plane);
 
