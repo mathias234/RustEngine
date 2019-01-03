@@ -73,7 +73,7 @@ fn start_game() {
     let glutin_context = glutin::ContextBuilder::new().with_vsync(true);
     let display = glium::Display::new(window, glutin_context, &events_loop).unwrap();
 
-    let mut render_context = renderer::RenderContext::new(win_width, win_height);
+    let mut render_context = renderer::RenderContext::new(win_width, win_height, &display);
     let mut resource_context = resource_manager::ResourceContext::new();
     let mut physics_context = physics_engine::PhysicsContext::new();
     let mut ui_context = ui_renderer::UIContext::new(&display, win_width as f32, win_height as f32);
@@ -86,6 +86,10 @@ fn start_game() {
 
     let mut sw = Stopwatch::start_new();
     let mut delta_time: f64 = 0.0;
+
+    let mut editor_context = editor::Editor::new();
+
+    let mut cursor_position: Option<(i32, i32)> = None;
 
     // Game Loop
     let mut closed = false;
@@ -101,10 +105,21 @@ fn start_game() {
 
         let mut target = display.draw();
 
-        renderer::render(&mut render_context, &mut resource_context, &mut target);
+        renderer::render(
+            &mut render_context,
+            &mut resource_context,
+            &mut target,
+            &display,
+            cursor_position,
+        );
         game_state.render_gui(&mut ui_context);
 
-        editor::render_editor(&mut ui_context, &mut game_state);
+        editor_context.render_editor(
+            &mut ui_context,
+            &mut game_state,
+            &mut render_context,
+            &mut resource_context,
+        );
 
         ui_context.draw_frame(&mut resource_context, &mut target, &display);
 
@@ -129,6 +144,7 @@ fn start_game() {
 
                     if position.is_some() {
                         let position = position.unwrap();
+                        cursor_position = Some((position.x as i32, position.y as i32));
                         ui_context.mouse_x = position.x as f32;
                         ui_context.mouse_y = position.y as f32;
                     }

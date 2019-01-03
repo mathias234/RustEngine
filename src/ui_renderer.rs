@@ -1,6 +1,7 @@
 // an immediate mode ui renderer
 extern crate glium;
 
+use assets;
 use glium::Surface;
 use math_helper;
 use resource_manager::*;
@@ -66,8 +67,8 @@ impl UIContext {
             elements: Vec::new(),
             program: shader::load(
                 &display,
-                include_bytes!("../res/ui_basic.vs"),
-                include_bytes!("../res/ui_basic.fs"),
+                &assets::get_asset("./res/ui_basic.vs"),
+                &assets::get_asset("./res/ui_basic.fs"),
             ),
             win_width: width,
             win_height: height,
