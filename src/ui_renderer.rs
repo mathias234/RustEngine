@@ -32,6 +32,14 @@ enum UIType {
     Text,
 }
 
+#[allow(dead_code)]
+#[derive(Copy, Clone, PartialEq)]
+pub enum TextAlignment {
+    Left,
+    Middle,
+    Right,
+}
+
 struct UIElement {
     ui_type: UIType,
     style: UIStyle,
@@ -52,6 +60,7 @@ pub struct UIStyle {
 
     font_size: i32,
     font_resolution: i32,
+    text_alignment: TextAlignment,
 }
 
 #[allow(dead_code)]
@@ -63,6 +72,7 @@ impl UIContext {
                 font_color: [1.0, 1.0, 1.0, 1.0],
                 font_size: 14,
                 font_resolution: 1,
+                text_alignment: TextAlignment::Middle,
             },
             elements: Vec::new(),
             program: shader::load(
@@ -79,6 +89,14 @@ impl UIContext {
             mouse_x: 0.0,
             mouse_y: 0.0,
         }
+    }
+
+    pub fn set_text_align(&mut self, alignment: TextAlignment) {
+        self.style.text_alignment = alignment;
+    }
+
+    pub fn get_text_align(&mut self) -> TextAlignment {
+        self.style.text_alignment
     }
 
     pub fn set_quad_color(&mut self, color: [f32; 4]) {
@@ -319,7 +337,9 @@ fn draw_text(
             let mut center_y = lerp(min_y, max_y, 0.5);
 
             // move text left so its centered in the middle not to the left side
-            center_x = center_x - width as f32 / 2.0;
+            if element.style.text_alignment == TextAlignment::Middle {
+                center_x = center_x - width as f32 / 2.0;
+            }
 
             // move text down so its centered in the middle of the text not the bottom
             center_y = center_y + (height as f32 / 2.0) as f32;

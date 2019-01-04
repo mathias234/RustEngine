@@ -149,7 +149,12 @@ impl Editor {
         }
     }
 
-    pub fn render_editor(&mut self, ui: &mut UIContext, game_state: &mut GameState) {
+    pub fn render_editor(
+        &mut self,
+        ui: &mut UIContext,
+        game_state: &mut GameState,
+        res: &mut ResourceContext,
+    ) {
         if game_state.menu_open {
             return;
         }
@@ -188,11 +193,52 @@ impl Editor {
         let mut element_idx = 0;
 
         ui.render_text(
-            "Editor",
+            "Inspector",
             win_pos_x,
             win_top_pos
                 - button_height / 2.0
                 - ((button_height + element_padding) * element_idx as f32),
         );
+
+        // draw inspector
+        if self.selected_obj.is_some() {
+            element_idx = 1;
+
+            let obj = res.get_gameobject_ref(self.selected_obj.unwrap());
+
+            let pos_string = format!(
+                "x: {x:.3} y: {y:.3}, z: {z:.3}",
+                x = obj.position.x,
+                y = obj.position.y,
+                z = obj.position.z
+            );
+
+            ui.render_text(
+                &pos_string,
+                win_pos_x,
+                win_top_pos
+                    - button_height / 2.0
+                    - ((button_height + element_padding) * element_idx as f32),
+            );
+
+            element_idx = 2;
+
+            let rot_euler = obj.rotation.to_euler();
+
+            let rot_string = format!(
+                "x: {x:.3} y: {y:.3}, z: {z:.3}",
+                x = rot_euler.x,
+                y = rot_euler.y,
+                z = rot_euler.z,
+            );
+
+            ui.render_text(
+                &rot_string,
+                win_pos_x,
+                win_top_pos
+                    - button_height / 2.0
+                    - ((button_height + element_padding) * element_idx as f32),
+            );
+        }
     }
 }

@@ -32,6 +32,37 @@ impl Quaternion {
         }
     }
 
+    pub fn to_euler(&self) -> Vector3 {
+        let q1 = self.normalized();
+        let e_x = (-2.0 * (q1.y * q1.z - q1.w * q1.x))
+            .atan2(q1.w * q1.w - q1.x * q1.x - q1.y * q1.y + q1.z * q1.z);
+        let e_y = (2.0 * (q1.x * q1.z + q1.w * q1.y)).asin();
+        let e_z = (-2.0 * (q1.x * q1.y - q1.w * q1.z))
+            .atan2(q1.w * q1.w + q1.x * q1.x - q1.y * q1.y - q1.z * q1.z);
+
+        return Vector3::new(e_x.to_degrees(), e_y.to_degrees(), e_z.to_degrees());
+    }
+
+    pub fn from_euler(euler: Vector3) -> Quaternion {
+        let e_x = euler.x.to_radians();
+        let e_y = euler.y.to_radians();
+        let e_z = euler.z.to_radians();
+
+        let c1 = (e_x / 2.0).cos();
+        let s1 = (e_x / 2.0).sin();
+        let c2 = (e_y / 2.0).cos();
+        let s2 = (e_y / 2.0).sin();
+        let c3 = (e_z / 2.0).cos();
+        let s3 = (e_z / 2.0).sin();
+
+        let q_w = c1 * c2 * c3 - s1 * s2 * s3;
+        let q_x = s1 * c2 * c3 + c1 * s2 * s3;
+        let q_y = c1 * s2 * c3 - s1 * c2 * s3;
+        let q_z = c1 * c2 * s3 + s1 * s2 * c3;
+
+        return Quaternion::new(q_x, q_y, q_z, q_w);
+    }
+
     pub fn length(&self) -> f32 {
         (self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w).sqrt()
     }

@@ -124,7 +124,7 @@ fn start_game() {
         );
         game_state.render_gui(&mut ui_context);
 
-        editor_context.render_editor(&mut ui_context, &mut game_state);
+        editor_context.render_editor(&mut ui_context, &mut game_state, &mut resource_context);
 
         ui_context.draw_frame(&mut resource_context, &mut target, &display);
 
