@@ -16,8 +16,8 @@ impl Input {
             last_keys: vec![false; 161],
             current_keys: vec![false; 161],
 
-            last_mouse: vec![false; 3],
-            current_mouse: vec![false; 3],
+            last_mouse: vec![false; 32], // hardcoded max mouse buttons, TODO: maybe quary the hardware for the actual size
+            current_mouse: vec![false; 32],
 
             mouse_position: [0.0, 0.0],
         }
@@ -114,17 +114,18 @@ impl Input {
 }
 
 fn mouse_code_to_id(mouse_button: glium::glutin::MouseButton) -> usize {
-    let res = match mouse_button {
+
+    let result = match mouse_button {
         glutin::MouseButton::Left => 0,
         glutin::MouseButton::Right => 1,
-        glutin::MouseButton::Middle => 2,
-        _ => -1,
-    };
+        glutin::MouseButton::Middle =>  2,
+        glutin::MouseButton::Other(mb) =>  mb,
+    } as i32;
 
-    if res == -1 {
+    if result == -1 {
         println!("Unknown mouse key code");
         return 0;
     }
 
-    res as usize
+    result as usize
 }

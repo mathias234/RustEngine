@@ -108,13 +108,30 @@ impl Editor {
         }
     }
 
-    pub fn is_gizmo(&self, id: Option<Resource>) -> bool {
+    pub fn is_gizmo(&self, id: Option<Resource>) -> Option<i32> {
         let unwrapped = id.unwrap();
 
-        (unwrapped == self.gizmo_x.unwrap())
-            || (unwrapped == self.gizmo_y.unwrap())
-            || (unwrapped == self.gizmo_z.unwrap())
+        let gizmo_x_unwrapped = self.gizmo_x.unwrap();
+        let gizmo_y_unwrapped = self.gizmo_y.unwrap();
+        let gizmo_z_unwrapped = self.gizmo_z.unwrap();
+
+        if gizmo_x_unwrapped == unwrapped {
+            return Some(0);
+        }
+
+        if gizmo_y_unwrapped == unwrapped {
+            return Some(1);
+        }
+        if gizmo_z_unwrapped == unwrapped {
+            return Some(2);
+        }
+
+        None
     }
+
+    pub fn move_x(&mut self) {}
+    pub fn move_y(&mut self) {}
+    pub fn move_z(&mut self) {}
 
     pub fn update(
         &mut self,
@@ -124,8 +141,15 @@ impl Editor {
         input: &mut Input,
     ) {
         if input.get_mouse_down(glutin::MouseButton::Left) && rc.picked_object.is_some() {
-            if self.is_gizmo(rc.picked_object) {
+            if self.is_gizmo(rc.picked_object).is_some() {
+                let val = self.is_gizmo(rc.picked_object).unwrap();
 
+                match val {
+                    0 => self.move_x(),
+                    1 => self.move_y(),
+                    2 => self.move_z(),
+                    _ => (),
+                }
             } else {
                 self.selected_obj = rc.picked_object;
             }
